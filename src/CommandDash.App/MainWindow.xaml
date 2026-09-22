@@ -14,25 +14,25 @@
         <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
             <DockPanel LastChildFill="True">
                 <!-- App title -->
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,18,16">
+                <!--<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,18,16">
                     <TextBlock Text="CommandDash" Foreground="{StaticResource TextPrimaryBrush}"
                                FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
-                </StackPanel>
+                </StackPanel>-->
 
                 <!-- Search box -->
-                <Border DockPanel.Dock="Top" Background="{StaticResource CardBrush}" CornerRadius="8"
+                <!--<Border DockPanel.Dock="Top" Background="{StaticResource CardBrush}" CornerRadius="8"
                         Margin="14,0,14,14" Padding="8,6">
                     <TextBox x:Name="SearchBox" Background="Transparent" BorderThickness="0"
                              Foreground="{StaticResource TextPrimaryBrush}"
                              CaretBrush="{StaticResource TextPrimaryBrush}"
                              Tag="Search modules..."/>
-                </Border>
+                </Border>-->
 
                 <!-- Navigation categories / module list -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="NavPanel" Margin="0,0,0,12">
-                        <TextBlock Text="GENERAL" Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="11" FontWeight="SemiBold" Margin="20,8,0,4"/>
+                    <StackPanel x:Name="NavPanel" Margin="0,12,0,12">
+                        <!--<TextBlock Text="GENERAL" Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="11" FontWeight="SemiBold" Margin="20,8,0,4"/>-->
                         <RadioButton Content="Dashboard" GroupName="Nav" Style="{StaticResource NavItemStyle}" IsChecked="True"/>
 
                         <TextBlock Text="MODULES" Foreground="{StaticResource TextSecondaryBrush}"
