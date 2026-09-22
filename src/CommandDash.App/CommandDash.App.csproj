@@ -11,6 +11,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
+    <!-- Not referenced for compilation (ReferenceOutputAssembly=false); this
+         only ensures the Sample module builds as part of the solution and
+         lets us copy its output into our own Modules folder below. The App
+         loads it dynamically via ModuleLoader, not via a direct reference. -->
+    <ProjectReference Include="..\CommandDash.Modules.Sample\CommandDash.Modules.Sample.csproj"
+                       ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!-- Copy the sample module's build output into this app's Modules/
+       folder so ModuleLoader can discover it at startup. -->
+  <Target Name="CopySampleModuleToModulesFolder" AfterTargets="Build">
+    <ItemGroup>
+      <SampleModuleOutput Include="..\CommandDash.Modules.Sample\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Sample.dll" />
+      <SampleModuleOutput Include="..\CommandDash.Modules.Sample\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Sample.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SampleModuleOutput)" DestinationFolder="$(OutDir)Modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
+  </Target>
 
 </Project>
