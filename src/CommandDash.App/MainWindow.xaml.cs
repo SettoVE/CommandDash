@@ -1,8 +1,9 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using CommandDash.App.Modules;
+using CommandDash.App.Settings;
 using CommandDash.Core;
-using System.IO;
 
 namespace CommandDash.App;
 
@@ -11,6 +12,7 @@ public partial class MainWindow : Window
     private readonly ModuleRegistry _registry = new();
     private readonly Dictionary<string, IModulePage> _activePages = new();
     private readonly IModuleLogger _logger = new DebugModuleLogger();
+    private readonly ModuleOrderSettings _orderSettings = new();
 
     public MainWindow()
     {
@@ -42,30 +44,20 @@ public partial class MainWindow : Window
     {
         NavPanel.Children.Clear();
 
-        foreach (var group in _registry.GroupedByCategory())
-        {
-            var header = new TextBlock
-            {
-                Text = group.Key.ToUpperInvariant(),
-                FontSize = 11,
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(20, 16, 0, 4),
-                Foreground = (System.Windows.Media.Brush)FindResource("TextSecondaryBrush"),
-            };
-            NavPanel.Children.Add(header);
+        var savedOrder = _orderSettings.Load();
+        var orderedModules = _registry.InOrder(savedOrder);
 
-            foreach (var module in group)
+        foreach (var module in orderedModules)
+        {
+            var navItem = new RadioButton
             {
-                var navItem = new RadioButton
-                {
-                    Content = module.DisplayName,
-                    GroupName = "Nav",
-                    Style = (Style)FindResource("NavItemStyle"),
-                    Tag = module.Id,
-                };
-                navItem.Checked += (_, _) => NavigateToModule(module.Id);
-                NavPanel.Children.Add(navItem);
-            }
+                Content = module.DisplayName,
+                GroupName = "Nav",
+                Style = (Style)FindResource("NavItemStyle"),
+                Tag = module.Id,
+            };
+            navItem.Checked += (_, _) => NavigateToModule(module.Id);
+            NavPanel.Children.Add(navItem);
         }
     }
 
@@ -112,5 +104,34 @@ public partial class MainWindow : Window
         PageTitle.Text = module.DisplayName;
         ModuleContentHost.Content = page.View;
         page.OnNavigatedTo();
+    }
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e)
+    {
+        var savedOrder = _orderSettings.Load();
+        var orderedModules = _registry.InOrder(savedOrder);
+
+        var settingsWindow = new SettingsWindow(orderedModules, _orderSettings)
+        {
+            Owner = this,
+        };
+        settingsWindow.OrderSaved += (_, _) =>
+        {
+            var previouslySelectedId = NavPanel.Children.OfType<RadioButton>()
+                .FirstOrDefault(r => r.IsChecked == true)?.Tag as string;
+
+            BuildSidebar();
+
+            if (previouslySelectedId is not null)
+            {
+                var navItem = NavPanel.Children.OfType<RadioButton>()
+                    .FirstOrDefault(r => (string)r.Tag == previouslySelectedId);
+                if (navItem is not null)
+                {
+                    navItem.IsChecked = true;
+                }
+            }
+        };
+        settingsWindow.ShowDialog();
     }
 }
