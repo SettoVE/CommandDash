@@ -6,22 +6,20 @@
         WindowStartupLocation="CenterOwner">
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="170"/>
+            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Primary navigation: settings sections, styled as a plain flat
-             list (foobar2000 preferences-style), not rounded nav pills.
-             "Default" group renders with no header; any other group (e.g.
-             "Modules") gets a small label above its first section. -->
+        <!-- Primary navigation: settings hierarchy (foobar2000-style
+             preferences tree). No tabs; each node has its own single
+             content page, and nodes can nest arbitrarily deep. -->
         <Border Grid.Column="0" Background="{DynamicResource CardBrush}"
                 BorderBrush="{DynamicResource BorderBrush2}" BorderThickness="1" Margin="0,0,16,0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="SectionPanel" Margin="0,4,0,4"/>
-            </ScrollViewer>
+            <TreeView x:Name="SectionTree" Background="Transparent" BorderThickness="0"
+                      SelectedItemChanged="SectionTree_SelectedItemChanged"/>
         </Border>
 
-        <!-- Secondary navigation: tabs within the selected section. -->
+        <!-- Content area for the currently selected node. -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -31,7 +29,7 @@
             <TextBlock x:Name="SectionTitle" Grid.Row="0" Foreground="{DynamicResource TextPrimaryBrush}"
                        FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
 
-            <TabControl x:Name="SectionTabControl" Grid.Row="1"/>
+            <ContentControl x:Name="SectionContentHost" Grid.Row="1"/>
         </Grid>
     </Grid>
 </Window>

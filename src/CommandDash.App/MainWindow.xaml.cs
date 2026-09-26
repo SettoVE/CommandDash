@@ -161,8 +161,8 @@ public partial class MainWindow : Window
         var savedOrder = _orderSettings.Load();
         var orderedModules = _registry.InOrder(savedOrder);
 
-        var moduleOrderSection = new ModuleOrderSettingsSection(orderedModules, _orderSettings);
-        moduleOrderSection.OrderSaved += (_, _) =>
+        var modulesNode = new ModulesSettingsNode(orderedModules, _orderSettings);
+        modulesNode.OrderSaved += (_, _) =>
         {
             var previouslySelectedId = NavPanel.Children.OfType<RadioButton>()
                 .FirstOrDefault(r => r.IsChecked == true)?.Tag as string;
@@ -180,13 +180,13 @@ public partial class MainWindow : Window
             }
         };
 
-        var sections = new List<ISettingsSection>
+        var rootNodes = new List<ISettingsNode>
         {
-            new GeneralSettingsSection(),
-            moduleOrderSection,
+            new GeneralSettingsNode(),
+            modulesNode,
         };
 
-        var settingsWindow = new SettingsWindow(sections)
+        var settingsWindow = new SettingsWindow(rootNodes)
         {
             Owner = this,
         };

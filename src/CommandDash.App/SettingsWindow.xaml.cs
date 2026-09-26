@@ -5,80 +5,94 @@ using CommandDash.Core;
 namespace CommandDash.App;
 
 /// <summary>
-/// Generic settings shell: a sidebar of <see cref="ISettingsSection"/>s
-/// (primary navigation, grouped) and a tab strip for the selected
-/// section's <see cref="ISettingsTab"/>s (secondary navigation).
+/// Generic settings shell: a <see cref="TreeView"/> of
+/// <see cref="ISettingsNode"/>s (foobar2000-style preferences tree) and a
+/// content area showing the selected node's page. There are no tabs —
+/// nesting is expressed purely via the tree.
 ///
-/// The sidebar is styled as a plain flat list (foobar2000 preferences
-/// style) rather than the rounded nav pills used for module navigation.
-///
-/// Adding a new built-in section only requires passing another
-/// <see cref="ISettingsSection"/> instance into the constructor; this
-/// window never needs to change.
+/// Adding a new built-in node only requires passing another
+/// <see cref="ISettingsNode"/> instance into the constructor; this window
+/// never needs to change.
 /// </summary>
 public partial class SettingsWindow : Window
 {
-    private readonly List<ISettingsSection> _sections;
+    private readonly List<ISettingsNode> _rootNodes;
 
-    public SettingsWindow(IEnumerable<ISettingsSection> sections)
+    public SettingsWindow(IEnumerable<ISettingsNode> rootNodes)
     {
         InitializeComponent();
 
-        _sections = sections.ToList();
-        BuildSectionList();
+        _rootNodes = rootNodes.ToList();
+        BuildTree();
     }
 
-    private void BuildSectionList()
+    private void BuildTree()
     {
-        SectionPanel.Children.Clear();
+        SectionTree.Items.Clear();
 
-        string? lastGroup = null;
-        foreach (var section in _sections)
+        foreach (var node in _rootNodes)
         {
-            if (section.Group != "Default" && section.Group != lastGroup)
-            {
-                SectionPanel.Children.Add(new TextBlock
-                {
-                    Text = section.Group.ToUpperInvariant(),
-                    FontSize = 10,
-                    FontWeight = FontWeights.SemiBold,
-                    Margin = new Thickness(10, 12, 0, 3),
-                    Foreground = (System.Windows.Media.Brush)FindResource("TextSecondaryBrush"),
-                });
-            }
-
-            lastGroup = section.Group;
-
-            var sectionItem = new RadioButton
-            {
-                Content = section.DisplayName,
-                GroupName = "SettingsSections",
-                Style = (Style)FindResource("SettingsNavItemStyle"),
-                Tag = section,
-            };
-            sectionItem.Checked += (_, _) => SelectSection(section);
-            SectionPanel.Children.Add(sectionItem);
+            SectionTree.Items.Add(BuildTreeItem(node));
         }
 
-        var firstItem = SectionPanel.Children.OfType<RadioButton>().FirstOrDefault();
+        ExpandAll(SectionTree.Items);
+
+        var firstItem = FindFirstTreeViewItem(SectionTree.Items);
         if (firstItem is not null)
         {
-            firstItem.IsChecked = true; // triggers SelectSection via Checked handler
+            firstItem.IsSelected = true;
         }
     }
 
-    private void SelectSection(ISettingsSection section)
+    private TreeViewItem BuildTreeItem(ISettingsNode node)
     {
-        SectionTitle.Text = section.DisplayName;
-
-        SectionTabControl.Items.Clear();
-        foreach (var tab in section.Tabs)
+        var item = new TreeViewItem
         {
-            SectionTabControl.Items.Add(new TabItem
-            {
-                Header = tab.Header,
-                Content = tab.CreateContent(),
-            });
+            Header = node.DisplayName,
+            Tag = node,
+        };
+
+        foreach (var child in node.Children)
+        {
+            item.Items.Add(BuildTreeItem(child));
         }
+
+        return item;
+    }
+
+    private static void ExpandAll(System.Collections.IEnumerable items)
+    {
+        foreach (var obj in items)
+        {
+            if (obj is TreeViewItem item)
+            {
+                item.IsExpanded = true;
+                ExpandAll(item.Items);
+            }
+        }
+    }
+
+    private static TreeViewItem? FindFirstTreeViewItem(System.Collections.IEnumerable items)
+    {
+        foreach (var obj in items)
+        {
+            if (obj is TreeViewItem item)
+            {
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    private void SectionTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        if (e.NewValue is not TreeViewItem { Tag: ISettingsNode node })
+        {
+            return;
+        }
+
+        SectionTitle.Text = node.DisplayName;
+        SectionContentHost.Content = node.CreateContent();
     }
 }
