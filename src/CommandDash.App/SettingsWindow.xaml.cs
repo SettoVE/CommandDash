@@ -1,77 +1,81 @@
 using System.Windows;
 using System.Windows.Controls;
-using CommandDash.App.Modules;
-using CommandDash.App.Settings;
 using CommandDash.Core;
 
 namespace CommandDash.App;
 
 /// <summary>
-/// Lets the user customize the order in which modules appear in the
-/// sidebar. Saves the new order via <see cref="ModuleOrderSettings"/>.
+/// Generic settings shell: a sidebar of <see cref="ISettingsSection"/>s
+/// (primary navigation, grouped) and a tab strip for the selected
+/// section's <see cref="ISettingsTab"/>s (secondary navigation).
+///
+/// Adding a new built-in section only requires passing another
+/// <see cref="ISettingsSection"/> instance into the constructor; this
+/// window never needs to change.
 /// </summary>
 public partial class SettingsWindow : Window
 {
-    private readonly List<IModule> _orderedModules;
-    private readonly ModuleOrderSettings _settings;
+    private readonly List<ISettingsSection> _sections;
 
-    public SettingsWindow(IReadOnlyList<IModule> orderedModules, ModuleOrderSettings settings)
+    public SettingsWindow(IEnumerable<ISettingsSection> sections)
     {
         InitializeComponent();
 
-        _orderedModules = orderedModules.ToList();
-        _settings = settings;
-
-        RefreshList();
+        _sections = sections.ToList();
+        BuildSectionList();
     }
 
-    /// <summary>
-    /// Raised after the user saves a new order, so the shell can rebuild
-    /// the sidebar without requiring an app restart.
-    /// </summary>
-    public event EventHandler? OrderSaved;
-
-    private void RefreshList()
+    private void BuildSectionList()
     {
-        ModuleListBox.ItemsSource = null;
-        ModuleListBox.ItemsSource = _orderedModules.Select(m => m.DisplayName).ToList();
-    }
+        SectionPanel.Children.Clear();
 
-    private void MoveUp_Click(object sender, RoutedEventArgs e)
-    {
-        var index = ModuleListBox.SelectedIndex;
-        if (index <= 0)
+        string? lastGroup = null;
+        foreach (var section in _sections)
         {
-            return;
+            if (section.Group != "Default" && section.Group != lastGroup)
+            {
+                SectionPanel.Children.Add(new TextBlock
+                {
+                    Text = section.Group.ToUpperInvariant(),
+                    FontSize = 11,
+                    FontWeight = FontWeights.SemiBold,
+                    Margin = new Thickness(8, 16, 0, 4),
+                    Foreground = (System.Windows.Media.Brush)FindResource("TextSecondaryBrush"),
+                });
+            }
+
+            lastGroup = section.Group;
+
+            var sectionItem = new RadioButton
+            {
+                Content = section.DisplayName,
+                GroupName = "SettingsSections",
+                Style = (Style)FindResource("NavItemStyle"),
+                Tag = section,
+            };
+            sectionItem.Checked += (_, _) => SelectSection(section);
+            SectionPanel.Children.Add(sectionItem);
         }
 
-        (_orderedModules[index - 1], _orderedModules[index]) = (_orderedModules[index], _orderedModules[index - 1]);
-        RefreshList();
-        ModuleListBox.SelectedIndex = index - 1;
-    }
-
-    private void MoveDown_Click(object sender, RoutedEventArgs e)
-    {
-        var index = ModuleListBox.SelectedIndex;
-        if (index < 0 || index >= _orderedModules.Count - 1)
+        var firstItem = SectionPanel.Children.OfType<RadioButton>().FirstOrDefault();
+        if (firstItem is not null)
         {
-            return;
+            firstItem.IsChecked = true; // triggers SelectSection via Checked handler
         }
-
-        (_orderedModules[index + 1], _orderedModules[index]) = (_orderedModules[index], _orderedModules[index + 1]);
-        RefreshList();
-        ModuleListBox.SelectedIndex = index + 1;
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private void SelectSection(ISettingsSection section)
     {
-        _settings.Save(_orderedModules.Select(m => m.Id).ToList());
-        OrderSaved?.Invoke(this, EventArgs.Empty);
-        Close();
-    }
+        SectionTitle.Text = section.DisplayName;
 
-    private void Cancel_Click(object sender, RoutedEventArgs e)
-    {
-        Close();
+        SectionTabControl.Items.Clear();
+        foreach (var tab in section.Tabs)
+        {
+            SectionTabControl.Items.Add(new TabItem
+            {
+                Header = tab.Header,
+                Content = tab.CreateContent(),
+            });
+        }
     }
 }

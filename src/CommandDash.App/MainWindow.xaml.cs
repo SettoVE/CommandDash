@@ -66,7 +66,7 @@ public partial class MainWindow : Window
             var module = orderedModules[i];
             var shortcutDigit = i < 10 ? ((i + 1) % 10).ToString() : null;
             var label = shortcutDigit is not null
-                ? $"[{shortcutDigit}]  {module.DisplayName}"
+                ? $"[{shortcutDigit}]    {module.DisplayName}"
                 : module.DisplayName;
 
             var navItem = new RadioButton
@@ -161,11 +161,8 @@ public partial class MainWindow : Window
         var savedOrder = _orderSettings.Load();
         var orderedModules = _registry.InOrder(savedOrder);
 
-        var settingsWindow = new SettingsWindow(orderedModules, _orderSettings)
-        {
-            Owner = this,
-        };
-        settingsWindow.OrderSaved += (_, _) =>
+        var moduleOrderSection = new ModuleOrderSettingsSection(orderedModules, _orderSettings);
+        moduleOrderSection.OrderSaved += (_, _) =>
         {
             var previouslySelectedId = NavPanel.Children.OfType<RadioButton>()
                 .FirstOrDefault(r => r.IsChecked == true)?.Tag as string;
@@ -181,6 +178,17 @@ public partial class MainWindow : Window
                     navItem.IsChecked = true;
                 }
             }
+        };
+
+        var sections = new List<ISettingsSection>
+        {
+            new GeneralSettingsSection(),
+            moduleOrderSection,
+        };
+
+        var settingsWindow = new SettingsWindow(sections)
+        {
+            Owner = this,
         };
         settingsWindow.ShowDialog();
     }
