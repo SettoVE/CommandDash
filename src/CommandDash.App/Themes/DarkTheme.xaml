@@ -10,6 +10,7 @@
     <Color x:Key="TextPrimaryColor">#FFF2F2F2</Color>
     <Color x:Key="TextSecondaryColor">#FFA0A4AA</Color>
     <Color x:Key="BorderColor">#FF3A3C41</Color>
+    <Color x:Key="SelectionTintColor">#223D8BFF</Color>
 
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
     <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}"/>
@@ -19,8 +20,9 @@
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="BorderBrush2" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="SelectionTintBrush" Color="{StaticResource SelectionTintColor}"/>
 
-    <!-- Sidebar nav item style -->
+    <!-- Sidebar nav item style (main window module navigation) -->
     <Style x:Key="NavItemStyle" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
         <Setter Property="Padding" Value="14,10"/>
@@ -37,6 +39,37 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource CardHoverBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Settings sidebar item style: a flat list item (foobar2000-style
+         preferences tree), not a rounded pill. Selection is shown with a
+         thin accent-colored bar on the left and a subtle background tint,
+         rather than a solid color block. No corner rounding, tighter
+         vertical rhythm, smaller/plainer type. -->
+    <Style x:Key="SettingsNavItemStyle" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd" Background="Transparent" BorderThickness="2,0,0,0" BorderBrush="Transparent" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SelectionTintBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{StaticResource CardHoverBrush}"/>
