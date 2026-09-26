@@ -6,16 +6,20 @@
         WindowStartupLocation="CenterOwner">
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180"/>
+            <ColumnDefinition Width="170"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Primary navigation: settings sections (sidebar). "Default" group
-             renders with no header; any other group (e.g. "Modules") gets a
-             label above its first section. -->
-        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,16,0">
-            <StackPanel x:Name="SectionPanel"/>
-        </ScrollViewer>
+        <!-- Primary navigation: settings sections, styled as a plain flat
+             list (foobar2000 preferences-style), not rounded nav pills.
+             "Default" group renders with no header; any other group (e.g.
+             "Modules") gets a small label above its first section. -->
+        <Border Grid.Column="0" Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource BorderBrush2}" BorderThickness="1" Margin="0,0,16,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="SectionPanel" Margin="0,4,0,4"/>
+            </ScrollViewer>
+        </Border>
 
         <!-- Secondary navigation: tabs within the selected section. -->
         <Grid Grid.Column="1">
