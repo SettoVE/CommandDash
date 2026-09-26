@@ -11,22 +11,30 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
-    <!-- Not referenced for compilation (ReferenceOutputAssembly=false); this
-         only ensures the Sample module builds as part of the solution and
-         lets us copy its output into our own Modules folder below. The App
-         loads it dynamically via ModuleLoader, not via a direct reference. -->
-    <ProjectReference Include="..\CommandDash.Modules.Sample\CommandDash.Modules.Sample.csproj"
+    <!-- Not referenced for compilation (ReferenceOutputAssembly=false); these
+         only ensure the built-in modules build as part of the solution and
+         let us copy their output into our own Modules folder below. The App
+         loads them dynamically via ModuleLoader, not via a direct reference. -->
+    <ProjectReference Include="..\CommandDash.Modules.Dashboard\CommandDash.Modules.Dashboard.csproj"
+                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommandDash.Modules.RunScript\CommandDash.Modules.RunScript.csproj"
+                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommandDash.Modules.Tasks\CommandDash.Modules.Tasks.csproj"
                        ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- Copy the sample module's build output into this app's Modules/
+  <!-- Copy each built-in module's build output into this app's Modules/
        folder so ModuleLoader can discover it at startup. -->
-  <Target Name="CopySampleModuleToModulesFolder" AfterTargets="Build">
+  <Target Name="CopyModulesToModulesFolder" AfterTargets="Build">
     <ItemGroup>
-      <SampleModuleOutput Include="..\CommandDash.Modules.Sample\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Sample.dll" />
-      <SampleModuleOutput Include="..\CommandDash.Modules.Sample\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Sample.pdb" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Dashboard.dll" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Dashboard.pdb" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.RunScript.dll" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.RunScript.pdb" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Tasks.dll" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Tasks.pdb" />
     </ItemGroup>
-    <Copy SourceFiles="@(SampleModuleOutput)" DestinationFolder="$(OutDir)Modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
+    <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)Modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
   </Target>
 
 </Project>

@@ -1,15 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>CommandDash.Modules.Sample</RootNamespace>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
-  </ItemGroup>
-
-</Project>
+<!--
+  DEPRECATED: The Sample module has been replaced by the built-in
+  Dashboard, Run Script, and Tasks placeholder modules. This project is no
+  longer referenced by CommandDash.App or included in CommandDash.sln.
+  This folder can be safely deleted from the repository.
+-->

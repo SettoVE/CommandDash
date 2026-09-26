@@ -1,0 +1,10 @@
+<UserControl x:Class="CommandDash.Modules.Tasks.TasksModuleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="4">
+        <TextBlock Text="Tasks" FontSize="22" FontWeight="Bold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+        <TextBlock Text="This is a placeholder for the Tasks module. Task list/management UI will be added here."
+                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+    </StackPanel>
+</UserControl>
