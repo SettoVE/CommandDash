@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CommandDash" Height="680" Width="1040"
         Background="{StaticResource BackgroundBrush}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="240"/>
@@ -23,7 +24,8 @@
                 <Button DockPanel.Dock="Bottom" Content="Settings" Click="OpenSettings_Click"
                         HorizontalAlignment="Stretch" Margin="14,8,14,14" Padding="8,6"/>
 
-                <!-- Navigation: populated dynamically from loaded modules, in customizable order -->
+                <!-- Navigation: populated dynamically from loaded modules, in customizable order.
+                     Each item is prefixed with its number key shortcut (1-9, 0 for the 10th). -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel x:Name="NavPanel" Margin="0,12,0,12"/>
                 </ScrollViewer>
