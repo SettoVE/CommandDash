@@ -9,6 +9,9 @@ namespace CommandDash.App;
 /// (primary navigation, grouped) and a tab strip for the selected
 /// section's <see cref="ISettingsTab"/>s (secondary navigation).
 ///
+/// The sidebar is styled as a plain flat list (foobar2000 preferences
+/// style) rather than the rounded nav pills used for module navigation.
+///
 /// Adding a new built-in section only requires passing another
 /// <see cref="ISettingsSection"/> instance into the constructor; this
 /// window never needs to change.
@@ -37,9 +40,9 @@ public partial class SettingsWindow : Window
                 SectionPanel.Children.Add(new TextBlock
                 {
                     Text = section.Group.ToUpperInvariant(),
-                    FontSize = 11,
+                    FontSize = 10,
                     FontWeight = FontWeights.SemiBold,
-                    Margin = new Thickness(8, 16, 0, 4),
+                    Margin = new Thickness(10, 12, 0, 3),
                     Foreground = (System.Windows.Media.Brush)FindResource("TextSecondaryBrush"),
                 });
             }
@@ -50,7 +53,7 @@ public partial class SettingsWindow : Window
             {
                 Content = section.DisplayName,
                 GroupName = "SettingsSections",
-                Style = (Style)FindResource("NavItemStyle"),
+                Style = (Style)FindResource("SettingsNavItemStyle"),
                 Tag = section,
             };
             sectionItem.Checked += (_, _) => SelectSection(section);
