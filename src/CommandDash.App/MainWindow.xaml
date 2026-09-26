@@ -15,10 +15,10 @@
         <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
             <DockPanel LastChildFill="True">
                 <!-- App title -->
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,18,16">
+                <!--<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="18,20,18,16">
                     <TextBlock Text="CommandDash" Foreground="{StaticResource TextPrimaryBrush}"
                                FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
-                </StackPanel>
+                </StackPanel>-->
 
                 <!-- Settings button pinned to the bottom of the sidebar -->
                 <Button DockPanel.Dock="Bottom" Content="Settings" Click="OpenSettings_Click"
