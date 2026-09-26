@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using CommandDash.App.Modules;
 using CommandDash.Core;
+using System.IO;
 
 namespace CommandDash.App;
 
