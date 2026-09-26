@@ -19,7 +19,11 @@
                                FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Navigation: populated dynamically from loaded modules, grouped by category -->
+                <!-- Settings button pinned to the bottom of the sidebar -->
+                <Button DockPanel.Dock="Bottom" Content="Settings" Click="OpenSettings_Click"
+                        HorizontalAlignment="Stretch" Margin="14,8,14,14" Padding="8,6"/>
+
+                <!-- Navigation: populated dynamically from loaded modules, in customizable order -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel x:Name="NavPanel" Margin="0,12,0,12"/>
                 </ScrollViewer>
