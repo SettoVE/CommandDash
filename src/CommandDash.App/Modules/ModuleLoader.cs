@@ -1,3 +1,4 @@
+using System.IO;
 using CommandDash.Core;
 
 namespace CommandDash.App.Modules;
