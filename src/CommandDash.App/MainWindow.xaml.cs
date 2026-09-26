@@ -64,38 +64,14 @@ public partial class MainWindow : Window
         for (var i = 0; i < orderedModules.Count; i++)
         {
             var module = orderedModules[i];
-            var shortcutLabel = i < 10 ? ((i + 1) % 10).ToString() : null;
-
-            var content = new StackPanel { Orientation = Orientation.Horizontal };
-            if (shortcutLabel is not null)
-            {
-                content.Children.Add(new Border
-                {
-                    Width = 20,
-                    Height = 20,
-                    CornerRadius = new CornerRadius(4),
-                    Background = (System.Windows.Media.Brush)FindResource("BorderBrush2"),
-                    Margin = new Thickness(0, 0, 10, 0),
-                    Child = new TextBlock
-                    {
-                        Text = shortcutLabel,
-                        FontSize = 11,
-                        FontWeight = FontWeights.SemiBold,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Foreground = (System.Windows.Media.Brush)FindResource("TextSecondaryBrush"),
-                    },
-                });
-            }
-            content.Children.Add(new TextBlock
-            {
-                Text = module.DisplayName,
-                VerticalAlignment = VerticalAlignment.Center,
-            });
+            var shortcutDigit = i < 10 ? ((i + 1) % 10).ToString() : null;
+            var label = shortcutDigit is not null
+                ? $"[{shortcutDigit}]    {module.DisplayName}"
+                : module.DisplayName;
 
             var navItem = new RadioButton
             {
-                Content = content,
+                Content = label,
                 GroupName = "Nav",
                 Style = (Style)FindResource("NavItemStyle"),
                 Tag = module.Id,
