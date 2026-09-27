@@ -3,21 +3,23 @@ using CommandDash.Core;
 namespace CommandDash.App.Settings;
 
 /// <summary>
-/// Built-in "Modules" node. Always contains "Module Order" as its first
-/// child; additionally contains one child per loaded module that
-/// implements <see cref="IModuleWithSettings"/> (modules that don't
-/// implement it simply are not listed).
+/// Built-in "Modules" node. Its own page is the Module Order UI (moving
+/// modules up/down in the sidebar); its children are the settings nodes
+/// contributed by any loaded module that implements
+/// <see cref="IModuleWithSettings"/> (modules that don't implement it
+/// simply are not listed).
 /// </summary>
 public sealed class ModulesSettingsNode : ISettingsNode
 {
+    private readonly IReadOnlyList<IModule> _orderedModules;
+    private readonly ModuleOrderSettings _settings;
+
     public ModulesSettingsNode(IReadOnlyList<IModule> orderedModules, ModuleOrderSettings settings)
     {
+        _orderedModules = orderedModules;
+        _settings = settings;
+
         var children = new List<ISettingsNode>();
-
-        var moduleOrderNode = new ModuleOrderSettingsNode(orderedModules, settings);
-        moduleOrderNode.OrderSaved += (_, _) => OrderSaved?.Invoke(this, EventArgs.Empty);
-        children.Add(moduleOrderNode);
-
         foreach (var module in orderedModules)
         {
             if (module is IModuleWithSettings withSettings)
@@ -41,5 +43,10 @@ public sealed class ModulesSettingsNode : ISettingsNode
     /// </summary>
     public event EventHandler? OrderSaved;
 
-    public object? CreateContent() => null;
+    public object? CreateContent()
+    {
+        var view = new ModuleOrderView(_orderedModules, _settings);
+        view.OrderSaved += (_, _) => OrderSaved?.Invoke(this, EventArgs.Empty);
+        return view;
+    }
 }
