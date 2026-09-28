@@ -3,12 +3,13 @@ using CommandDash.Core;
 namespace CommandDash.Modules.Dashboard;
 
 /// <summary>
-/// Placeholder built-in Dashboard module. Intended to become the default
-/// landing page hosting a customizable widget grid (see IWidget/IWidgetProvider).
+/// Built-in Dashboard module. The default landing page, hosting a grid of
+/// widgets (see IWidget/IWidgetProvider).
 /// </summary>
-public sealed class DashboardModule : IModule
+public sealed class DashboardModule : IModule, IWidgetProvider
 {
     private IModuleContext? _context;
+    private IReadOnlyList<IWidget>? _widgets;
 
     public string Id => "commanddash.home";
 
@@ -34,5 +35,7 @@ public sealed class DashboardModule : IModule
         _context = null;
     }
 
-    public IModulePage CreatePage() => new DashboardModulePage();
+    public IReadOnlyList<IWidget> CreateWidgets() => _widgets ??= new IWidget[] { new ClockWidget() };
+
+    public IModulePage CreatePage() => new DashboardModulePage(CreateWidgets());
 }

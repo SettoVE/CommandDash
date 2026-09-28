@@ -9,6 +9,13 @@ namespace CommandDash.App.Modules;
 /// </summary>
 public sealed class ModuleLoader
 {
+    private readonly IModuleLogger? _logger;
+
+    public ModuleLoader(IModuleLogger? logger = null)
+    {
+        _logger = logger;
+    }
+
     /// <summary>
     /// Scans <paramref name="modulesDirectory"/> (non-recursive) for *.dll
     /// files, loads each into its own context, and instantiates every
@@ -31,10 +38,11 @@ public sealed class ModuleLoader
             {
                 modulesInAssembly = LoadModulesFromAssembly(dllPath);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // A single bad/incompatible module shouldn't prevent the rest
-                // from loading. Diagnostics/logging will be added later.
+                // from loading.
+                _logger?.Error($"Failed to load module assembly '{dllPath}'.", ex);
                 continue;
             }
 

@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, IModulePage> _activePages = new();
     private readonly IModuleLogger _logger = new DebugModuleLogger();
     private readonly ModuleOrderSettings _orderSettings = new();
+    private IModulePage? _currentPage;
 
     public MainWindow()
     {
@@ -39,11 +40,8 @@ public partial class MainWindow : Window
 
     private void LoadModules()
     {
-        // Built-in modules compiled directly into the app (e.g. Home) will be
-        // registered here once implemented.
-
         var modulesDirectory = Path.Combine(AppContext.BaseDirectory, "Modules");
-        var loader = new ModuleLoader();
+        var loader = new ModuleLoader(_logger);
         var discovered = loader.LoadFrom(modulesDirectory);
 
         foreach (var loadedModule in discovered)
@@ -83,8 +81,8 @@ public partial class MainWindow : Window
 
     private void NavigateToDefaultModule()
     {
-        // Prefer a built-in "Home" module once it exists; otherwise fall back
-        // to the first registered module, if any.
+        // Prefer the built-in Dashboard module; otherwise fall back to the
+        // first registered module, if any.
         var defaultModule = _registry.Find("commanddash.home") ?? _registry.Modules.FirstOrDefault();
         if (defaultModule is null)
         {
@@ -116,10 +114,13 @@ public partial class MainWindow : Window
             _activePages[moduleId] = page;
         }
 
-        foreach (var existing in _activePages.Values)
+        if (ReferenceEquals(_currentPage, page))
         {
-            existing.OnNavigatedFrom();
+            return;
         }
+
+        _currentPage?.OnNavigatedFrom();
+        _currentPage = page;
 
         PageTitle.Text = module.DisplayName;
         ModuleContentHost.Content = page.View;
@@ -130,6 +131,19 @@ public partial class MainWindow : Window
         {
             navItem.IsChecked = true;
         }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _currentPage?.OnNavigatedFrom();
+        _currentPage = null;
+
+        foreach (var module in _registry.Modules)
+        {
+            module.OnUnloaded();
+        }
+
+        base.OnClosed(e);
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
