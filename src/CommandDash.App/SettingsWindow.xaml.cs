@@ -93,7 +93,7 @@ public partial class SettingsWindow : Window
             return;
         }
 
-        SectionTitle.Text = node.DisplayName;
+        //SectionTitle.Text = node.DisplayName;
         SectionContentHost.Content = node.CreateContent();
     }
 }
