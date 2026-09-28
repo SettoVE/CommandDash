@@ -50,6 +50,7 @@ public partial class SettingsWindow : Window
         {
             Header = node.DisplayName,
             Tag = node,
+            Style = (Style)FindResource("SettingsTreeItemStyle"),
         };
 
         foreach (var child in node.Children)
