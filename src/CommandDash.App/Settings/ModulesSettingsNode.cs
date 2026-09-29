@@ -13,11 +13,16 @@ public sealed class ModulesSettingsNode : ISettingsNode
 {
     private readonly IReadOnlyList<IModule> _orderedModules;
     private readonly ModuleOrderSettings _settings;
+    private readonly ModuleBackgroundSettings _backgroundSettings;
 
-    public ModulesSettingsNode(IReadOnlyList<IModule> orderedModules, ModuleOrderSettings settings)
+    public ModulesSettingsNode(
+        IReadOnlyList<IModule> orderedModules,
+        ModuleOrderSettings settings,
+        ModuleBackgroundSettings backgroundSettings)
     {
         _orderedModules = orderedModules;
         _settings = settings;
+        _backgroundSettings = backgroundSettings;
 
         var children = new List<ISettingsNode>();
         foreach (var module in orderedModules)
@@ -47,6 +52,15 @@ public sealed class ModulesSettingsNode : ISettingsNode
     {
         var view = new ModuleOrderView(_orderedModules, _settings);
         view.OrderSaved += (_, _) => OrderSaved?.Invoke(this, EventArgs.Empty);
-        return view;
+
+        var panel = new System.Windows.Controls.StackPanel();
+        panel.Children.Add(view);
+        panel.Children.Add(new BackgroundSettingsView(_orderedModules, _backgroundSettings));
+
+        return new System.Windows.Controls.ScrollViewer
+        {
+            VerticalScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility.Auto,
+            Content = panel,
+        };
     }
 }

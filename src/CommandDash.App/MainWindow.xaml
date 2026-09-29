@@ -32,6 +32,10 @@
             </DockPanel>
         </Border>
 
+        <!-- Custom per-module background; translucent when none is set -->
+        <Border x:Name="BackgroundPanel" Grid.Column="1" Background="{x:Null}" IsHitTestVisible="False"
+                RenderOptions.BitmapScalingMode="HighQuality" SnapsToDevicePixels="False"/>
+
         <!-- Content area: hosts the active module's page view -->
         <Grid Grid.Column="1" Margin="24">
             <Grid.RowDefinitions>
@@ -39,8 +43,8 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock x:Name="PageTitle" Grid.Row="0" Text="" Foreground="{StaticResource TextPrimaryBrush}"
-                       FontSize="26" FontWeight="Bold" Margin="0,0,0,20"/>
+            <!--<TextBlock x:Name="PageTitle" Grid.Row="0" Text="" Foreground="{StaticResource TextPrimaryBrush}"
+                       FontSize="26" FontWeight="Bold" Margin="0,0,0,20"/>-->
 
             <ContentControl x:Name="ModuleContentHost" Grid.Row="1"/>
         </Grid>

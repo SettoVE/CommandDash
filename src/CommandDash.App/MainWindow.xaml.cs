@@ -27,11 +27,21 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, IModulePage> _activePages = new();
     private readonly IModuleLogger _logger = new DebugModuleLogger();
     private readonly ModuleOrderSettings _orderSettings = new();
+    private readonly ModuleBackgroundSettings _backgroundSettings = new();
+    private string? _currentModuleId;
     private IModulePage? _currentPage;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _backgroundSettings.BackgroundChanged += (_, moduleId) =>
+        {
+            if (moduleId == _currentModuleId)
+            {
+                ApplyBackground(moduleId);
+            }
+        };
 
         LoadModules();
         BuildSidebar();
@@ -121,8 +131,10 @@ public partial class MainWindow : Window
 
         _currentPage?.OnNavigatedFrom();
         _currentPage = page;
+        _currentModuleId = moduleId;
+        ApplyBackground(moduleId);
 
-        PageTitle.Text = module.DisplayName;
+        //PageTitle.Text = module.DisplayName;
         ModuleContentHost.Content = page.View;
         page.OnNavigatedTo();
 
@@ -130,6 +142,38 @@ public partial class MainWindow : Window
         if (navItem is not null && navItem.IsChecked != true)
         {
             navItem.IsChecked = true;
+        }
+    }
+
+    private void ApplyBackground(string moduleId)
+    {
+        var path = _backgroundSettings.GetPath(moduleId);
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            BackgroundPanel.Background = null;
+            return;
+        }
+
+        try
+        {
+            var image = new System.Windows.Media.Imaging.BitmapImage();
+            image.BeginInit();
+            image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(path, UriKind.Absolute);
+            image.EndInit();
+            image.Freeze();
+
+            BackgroundPanel.Background = new System.Windows.Media.ImageBrush(image)
+            {
+                Stretch = System.Windows.Media.Stretch.UniformToFill,
+                AlignmentX = System.Windows.Media.AlignmentX.Center,
+                AlignmentY = System.Windows.Media.AlignmentY.Center,
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to load background image '{path}'.", ex);
+            BackgroundPanel.Background = null;
         }
     }
 
@@ -148,6 +192,13 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape)
+        {
+            Close();
+            e.Handled = true;
+            return;
+        }
+
         var index = Array.IndexOf(NumberKeysInOrder, e.Key);
         if (index < 0)
         {
@@ -175,7 +226,7 @@ public partial class MainWindow : Window
         var savedOrder = _orderSettings.Load();
         var orderedModules = _registry.InOrder(savedOrder);
 
-        var modulesNode = new ModulesSettingsNode(orderedModules, _orderSettings);
+        var modulesNode = new ModulesSettingsNode(orderedModules, _orderSettings, _backgroundSettings);
         modulesNode.OrderSaved += (_, _) =>
         {
             var previouslySelectedId = NavPanel.Children.OfType<RadioButton>()

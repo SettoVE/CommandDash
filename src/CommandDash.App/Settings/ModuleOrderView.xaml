@@ -1,6 +1,7 @@
 <UserControl x:Class="CommandDash.App.Settings.ModuleOrderView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CommandDash.App.Settings">
     <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -9,8 +10,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Module Order" Foreground="{DynamicResource TextPrimaryBrush}"
-                   FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+        <local:SettingsSectionHeader Grid.Row="0" Title="Module order"/>
 
         <ListBox x:Name="ModuleListBox" Grid.Row="1" Background="{DynamicResource CardBrush}"
                  Foreground="{DynamicResource TextPrimaryBrush}" BorderThickness="1"

@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using CommandDash.Core;
 
 namespace CommandDash.Modules.Dashboard;
@@ -7,6 +8,7 @@ namespace CommandDash.Modules.Dashboard;
 public partial class DashboardModuleView : UserControl
 {
     private const double CellSize = 160;
+    private const double CornerRadius = 8;
 
     public DashboardModuleView()
     {
@@ -40,10 +42,29 @@ public partial class DashboardModuleView : UserControl
             Width = cols * CellSize,
             Height = rows * CellSize,
             Margin = new Thickness(0, 0, 8, 8),
-            CornerRadius = new CornerRadius(8),
-            Child = grid,
+            ClipToBounds = true,
         };
-        card.SetResourceReference(Border.BackgroundProperty, "CardBrush");
+        card.Clip = new RectangleGeometry(new Rect(0, 0, card.Width, card.Height), CornerRadius, CornerRadius);
+
+        var layers = new Grid();
+
+        var glass = new Border
+        {
+            IsHitTestVisible = false,
+            CornerRadius = new CornerRadius(CornerRadius),
+            BorderThickness = new Thickness(1),
+        };
+        glass.SetResourceReference(Border.BackgroundProperty, "WidgetGlassBrush");
+        glass.SetResourceReference(Border.BorderBrushProperty, "WidgetGlassBorderBrush");
+
+        var sheen = new Border { IsHitTestVisible = false, CornerRadius = new CornerRadius(CornerRadius) };
+        sheen.SetResourceReference(Border.BackgroundProperty, "WidgetGlassSheenBrush");
+
+        layers.Children.Add(glass);
+        layers.Children.Add(sheen);
+        layers.Children.Add(grid);
+
+        card.Child = layers;
         WidgetPanel.Children.Add(card);
     }
 }

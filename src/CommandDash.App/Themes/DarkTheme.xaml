@@ -21,6 +21,13 @@
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="BorderBrush2" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="SelectionTintBrush" Color="{StaticResource SelectionTintColor}"/>
+    <SolidColorBrush x:Key="WidgetGlassBrush" Color="#992F3136"/>
+    <SolidColorBrush x:Key="WidgetGlassBorderBrush" Color="#26FFFFFF"/>
+    <LinearGradientBrush x:Key="WidgetGlassSheenBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#1CFFFFFF" Offset="0"/>
+        <GradientStop Color="#05FFFFFF" Offset="0.6"/>
+        <GradientStop Color="#00FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
 
     <!-- Sidebar nav item style (main window module navigation) -->
     <Style x:Key="NavItemStyle" TargetType="RadioButton">
