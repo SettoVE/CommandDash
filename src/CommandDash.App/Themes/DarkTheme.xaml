@@ -6,7 +6,7 @@
     <Color x:Key="SidebarColor">#FF2B2D30</Color>
     <Color x:Key="CardColor">#FF2F3136</Color>
     <Color x:Key="CardHoverColor">#FF383A40</Color>
-    <Color x:Key="AccentColor">#FF3D8BFF</Color>
+    <Color x:Key="AccentColor">#FF4EB7AC</Color>
     <Color x:Key="TextPrimaryColor">#FFF2F2F2</Color>
     <Color x:Key="TextSecondaryColor">#FFA0A4AA</Color>
     <Color x:Key="BorderColor">#FF3A3C41</Color>
@@ -141,6 +141,11 @@
                 <Setter Property="Background" Value="{StaticResource CardHoverBrush}"/>
             </Trigger>
         </Style.Triggers>
+    </Style>
+
+    <!-- Implicit CheckBox style: default text is black, which is unreadable on the dark theme. -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
     </Style>
 
 </ResourceDictionary>

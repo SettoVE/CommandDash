@@ -34,12 +34,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        TitleBarTheme.Apply(this);
 
         _backgroundSettings.BackgroundChanged += (_, moduleId) =>
         {
             if (moduleId == _currentModuleId)
             {
-                ApplyBackground(moduleId);
+                ApplyBackground(moduleId, restart: true);
             }
         };
 
@@ -145,12 +146,138 @@ public partial class MainWindow : Window
         }
     }
 
-    private void ApplyBackground(string moduleId)
+    private static readonly string[] ImageExtensions = { ".png", ".jpg", ".jpeg", ".bmp", ".gif" };
+
+    private readonly System.Windows.Threading.DispatcherTimer _slideshowTimer = new();
+    private sealed class SlideshowState
     {
-        var path = _backgroundSettings.GetPath(moduleId);
+        public int Index { get; set; } = -1;
+
+        public string? File { get; set; }
+
+        public DateTime ChangedAt { get; set; }
+    }
+
+    private readonly Dictionary<string, SlideshowState> _slideshowStates = new();
+    private string? _shownPath;
+
+    private void StartSlideshow(string moduleId, SlideshowConfig config, bool restart)
+    {
+        _slideshowTimer.Stop();
+        _slideshowTimer.Tick -= SlideshowTimer_Tick;
+        _slideshowTimer.Tick += SlideshowTimer_Tick;
+        _slideshowTimer.Tag = moduleId;
+
+        var interval = TimeSpan.FromSeconds(Math.Max(1, config.IntervalSeconds));
+        var hasState = _slideshowStates.TryGetValue(moduleId, out var state)
+            && state.File is not null
+            && File.Exists(state.File)
+            && string.Equals(
+                Path.GetFullPath(Path.GetDirectoryName(state.File) ?? string.Empty),
+                Path.GetFullPath(config.Folder),
+                StringComparison.OrdinalIgnoreCase);
+        if (!hasState)
+        {
+            _slideshowStates[moduleId] = new SlideshowState();
+            AdvanceSlideshow(moduleId, config, restart);
+            _slideshowTimer.Interval = interval;
+        }
+        else
+        {
+            ShowImage(state!.File!, restart);
+            if (restart)
+            {
+                state.ChangedAt = DateTime.UtcNow;
+            }
+
+            var remaining = interval - (DateTime.UtcNow - state.ChangedAt);
+            _slideshowTimer.Interval = remaining < TimeSpan.FromMilliseconds(100)
+                ? TimeSpan.FromMilliseconds(100)
+                : remaining;
+        }
+
+        _slideshowTimer.Start();
+    }
+
+    private void SlideshowTimer_Tick(object? sender, EventArgs e)
+    {
+        if (_slideshowTimer.Tag is string moduleId && moduleId == _currentModuleId)
+        {
+            var config = _backgroundSettings.GetSlideshow(moduleId);
+            AdvanceSlideshow(moduleId, config);
+            _slideshowTimer.Interval = TimeSpan.FromSeconds(Math.Max(1, config.IntervalSeconds));
+        }
+    }
+
+    private void AdvanceSlideshow(string moduleId, SlideshowConfig config, bool animate = true)
+    {
+        if (!_slideshowStates.TryGetValue(moduleId, out var state))
+        {
+            state = new SlideshowState();
+            _slideshowStates[moduleId] = state;
+        }
+        string[] files;
+        try
+        {
+            files = Directory.EnumerateFiles(config.Folder)
+                .Where(f => ImageExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+                .ToArray();
+        }
+        catch (Exception)
+        {
+            files = Array.Empty<string>();
+        }
+
+        if (files.Length == 0)
+        {
+            ClearBackground();
+            return;
+        }
+
+        if (config.Shuffle && files.Length > 1)
+        {
+            int next;
+            do
+            {
+                next = Random.Shared.Next(files.Length);
+            }
+            while (next == state.Index);
+            state.Index = next;
+        }
+        else
+        {
+            state.Index = (state.Index + 1) % files.Length;
+        }
+
+        state.File = files[state.Index];
+        state.ChangedAt = DateTime.UtcNow;
+        ShowImage(state.File, animate);
+    }
+
+    private void ApplyBackground(string moduleId, bool restart = false)
+    {
+        var slideshow = _backgroundSettings.GetSlideshow(moduleId);
+        if (slideshow.Enabled && !string.IsNullOrWhiteSpace(slideshow.Folder))
+        {
+            StartSlideshow(moduleId, slideshow, restart);
+            return;
+        }
+
+        _slideshowTimer.Stop();
+        _slideshowStates.Remove(moduleId);
+        ShowImage(_backgroundSettings.GetPath(moduleId), animate: restart);
+    }
+
+    private void ShowImage(string path, bool animate = true)
+    {
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
-            BackgroundPanel.Background = null;
+            ClearBackground();
+            return;
+        }
+
+        if (path == _shownPath)
+        {
             return;
         }
 
@@ -163,18 +290,56 @@ public partial class MainWindow : Window
             image.EndInit();
             image.Freeze();
 
-            BackgroundPanel.Background = new System.Windows.Media.ImageBrush(image)
+            CommitFade();
+            _shownPath = path;
+            var brush = new System.Windows.Media.ImageBrush(image)
             {
                 Stretch = System.Windows.Media.Stretch.UniformToFill,
                 AlignmentX = System.Windows.Media.AlignmentX.Center,
                 AlignmentY = System.Windows.Media.AlignmentY.Center,
+                Opacity = animate ? 0 : 1,
             };
+
+            if (!animate)
+            {
+                BackgroundFadePanel.Background = null;
+                BackgroundPanel.Background = brush;
+                return;
+            }
+            BackgroundFadePanel.Background = brush;
+            var fade = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(800));
+            fade.Completed += (_, _) =>
+            {
+                if (ReferenceEquals(BackgroundFadePanel.Background, brush))
+                {
+                    CommitFade();
+                }
+            };
+            brush.BeginAnimation(System.Windows.Media.Brush.OpacityProperty, fade);
         }
         catch (Exception ex)
         {
             _logger.Error($"Failed to load background image '{path}'.", ex);
-            BackgroundPanel.Background = null;
+            ClearBackground();
         }
+    }
+
+    private void CommitFade()
+    {
+        if (BackgroundFadePanel.Background is System.Windows.Media.ImageBrush top)
+        {
+            top.BeginAnimation(System.Windows.Media.Brush.OpacityProperty, null);
+            top.Opacity = 1;
+            BackgroundPanel.Background = top;
+            BackgroundFadePanel.Background = null;
+        }
+    }
+
+    private void ClearBackground()
+    {
+        _shownPath = null;
+        BackgroundFadePanel.Background = null;
+        BackgroundPanel.Background = null;
     }
 
     protected override void OnClosed(EventArgs e)

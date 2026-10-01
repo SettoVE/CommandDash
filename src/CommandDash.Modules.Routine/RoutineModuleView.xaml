@@ -1,0 +1,46 @@
+<UserControl x:Class="CommandDash.Modules.Routine.RoutineModuleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CommandDash.Modules.Routine">
+    <UserControl.Resources>
+        <DataTemplate DataType="{x:Type local:RoutineItem}">
+            <Border Margin="0,0,0,8" CornerRadius="8" BorderThickness="1" ClipToBounds="True"
+                    Background="{DynamicResource WidgetGlassBrush}"
+                    BorderBrush="{DynamicResource WidgetGlassBorderBrush}">
+                <Grid>
+                    <Border CornerRadius="8" IsHitTestVisible="False"
+                            Background="{DynamicResource WidgetGlassSheenBrush}"/>
+                    <Grid Margin="16,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="18" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Grid.Column="1" Text="{Binding ElapsedText}" FontSize="20"
+                                   VerticalAlignment="Center" Margin="16,0" MinWidth="120" TextAlignment="Right"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <Button Grid.Column="2" Content="Complete" FontSize="14" Padding="14,6"
+                                VerticalAlignment="Center" Click="Complete_Click"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:RoutineCategory}">
+            <StackPanel Margin="0,0,0,14">
+                <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,8"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <ItemsControl ItemsSource="{Binding Items}"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="4">
+            <TextBlock Text="Routine" FontSize="22" FontWeight="Bold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+            <ItemsControl x:Name="CategoryList"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

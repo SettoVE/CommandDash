@@ -1,0 +1,28 @@
+<UserControl x:Class="CommandDash.Modules.Routine.RoutineSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CommandDash.Modules.Routine">
+    <UserControl.Resources>
+        <HierarchicalDataTemplate DataType="{x:Type local:RoutineCategory}" ItemsSource="{Binding Items}">
+            <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type local:RoutineItem}">
+            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimaryBrush}"/>
+        </DataTemplate>
+    </UserControl.Resources>
+    <DockPanel Margin="4" MinHeight="300">
+        <TextBlock DockPanel.Dock="Top" Text="Routine" FontSize="22" FontWeight="Bold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+            <Button Content="Add Category" Padding="10,3" Margin="0,0,6,0" Click="AddCategory_Click"/>
+            <Button Content="Add Item" Padding="10,3" Margin="0,0,6,0" Click="AddItem_Click"/>
+            <Button Content="Remove" Padding="10,3" Margin="0,0,6,0" Click="Remove_Click"/>
+            <Button Content="&#x25B2;" Width="28" Margin="0,0,6,0" ToolTip="Move up" Click="MoveUp_Click"/>
+            <Button Content="&#x25BC;" Width="28" ToolTip="Move down" Click="MoveDown_Click"/>
+        </StackPanel>
+        <TreeView x:Name="Tree" Background="Transparent" BorderThickness="1"
+                  BorderBrush="{DynamicResource BorderBrush2}"
+                  SelectedItemChanged="Tree_SelectedItemChanged"/>
+    </DockPanel>
+</UserControl>

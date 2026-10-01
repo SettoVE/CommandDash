@@ -8,10 +8,23 @@ namespace CommandDash.App.Settings;
 /// JSON under %AppData%\CommandDash\backgrounds.json. A module with no entry
 /// uses the default (no custom background).
 /// </summary>
+public sealed class SlideshowConfig
+{
+    public bool Enabled { get; set; }
+
+    public string Folder { get; set; } = string.Empty;
+
+    public int IntervalSeconds { get; set; } = 30;
+
+    public bool Shuffle { get; set; }
+}
+
 public sealed class ModuleBackgroundSettings
 {
     private readonly string _filePath;
+    private readonly string _slideshowFilePath;
     private readonly Dictionary<string, string> _paths;
+    private readonly Dictionary<string, SlideshowConfig> _slideshows;
 
     public ModuleBackgroundSettings()
     {
@@ -21,6 +34,42 @@ public sealed class ModuleBackgroundSettings
         Directory.CreateDirectory(settingsDirectory);
         _filePath = Path.Combine(settingsDirectory, "backgrounds.json");
         _paths = Load();
+        _slideshowFilePath = Path.Combine(settingsDirectory, "slideshows.json");
+        _slideshows = LoadSlideshows();
+    }
+
+    public SlideshowConfig GetSlideshow(string moduleId) =>
+        _slideshows.TryGetValue(moduleId, out var config) ? config : new SlideshowConfig();
+
+    public void SetSlideshow(string moduleId, SlideshowConfig config)
+    {
+        _slideshows[moduleId] = config;
+        File.WriteAllText(
+            _slideshowFilePath,
+            JsonSerializer.Serialize(_slideshows, new JsonSerializerOptions { WriteIndented = true }));
+        BackgroundChanged?.Invoke(this, moduleId);
+    }
+
+    private Dictionary<string, SlideshowConfig> LoadSlideshows()
+    {
+        try
+        {
+            if (File.Exists(_slideshowFilePath))
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, SlideshowConfig>>(
+                    File.ReadAllText(_slideshowFilePath));
+                if (data is not null)
+                {
+                    return data;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Corrupt or unreadable settings fall back to defaults.
+        }
+
+        return new Dictionary<string, SlideshowConfig>();
     }
 
     /// <summary>

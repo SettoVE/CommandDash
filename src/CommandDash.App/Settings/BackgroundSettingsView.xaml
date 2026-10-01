@@ -20,5 +20,24 @@
             <Button Grid.Column="1" Content="Select" Click="Select_Click" Padding="10,4" Margin="8,0,0,0"/>
             <Button Grid.Column="2" Content="Default" Click="Default_Click" Padding="10,4" Margin="8,0,0,0"/>
         </Grid>
+
+        <CheckBox x:Name="SlideshowCheckBox" Content="Enable Slideshow" Margin="0,16,0,0" Foreground="{DynamicResource TextPrimaryBrush}"
+                  Checked="Slideshow_Changed" Unchecked="Slideshow_Changed"/>
+
+        <Grid x:Name="SlideshowFolderRow" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="FolderTextBox" Grid.Column="0" IsReadOnly="True" VerticalContentAlignment="Center"
+                     Padding="4,4"/>
+            <Button Grid.Column="1" Content="Choose Folder" Click="ChooseFolder_Click" Padding="10,4" Margin="8,0,0,0"/>
+        </Grid>
+
+        <StackPanel x:Name="SlideshowIntervalRow" Orientation="Horizontal" Margin="0,8,0,0">
+            <ComboBox x:Name="IntervalComboBox" Width="100" SelectionChanged="Slideshow_Changed"/>
+            <CheckBox x:Name="ShuffleCheckBox" Content="Shuffle" Margin="12,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"
+                      Checked="Slideshow_Changed" Unchecked="Slideshow_Changed"/>
+        </StackPanel>
     </StackPanel>
 </UserControl>

@@ -21,6 +21,7 @@ public partial class SettingsWindow : Window
     public SettingsWindow(IEnumerable<ISettingsNode> rootNodes)
     {
         InitializeComponent();
+        TitleBarTheme.Apply(this);
 
         _rootNodes = rootNodes.ToList();
         BuildTree();

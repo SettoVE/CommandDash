@@ -21,6 +21,8 @@
                        ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\CommandDash.Modules.Tasks\CommandDash.Modules.Tasks.csproj"
                        ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CommandDash.Modules.Routine\CommandDash.Modules.Routine.csproj"
+                       ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- Copy each built-in module's build output into this app's Modules/
@@ -33,6 +35,8 @@
       <BuiltInModuleOutput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.RunScript.pdb" />
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Tasks.dll" />
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Tasks.pdb" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.dll" />
+      <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.pdb" />
     </ItemGroup>
     <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)Modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
   </Target>
