@@ -37,6 +37,8 @@ public sealed class NetworkWidget : HardwareWidgetBase
 
     public override string Id => "commanddash.home.network";
 
+    public override WidgetGridPosition? DefaultPosition => new(2, 1);
+
     public override string DisplayName => "Network";
 
     public override object CreateView()

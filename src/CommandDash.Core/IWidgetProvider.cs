@@ -13,6 +13,7 @@ public interface IWidgetProvider
     /// Called once after the owning module's <see cref="IModule.OnLoaded"/>
     /// has completed. The host decides which of these (if any) are actually
     /// placed on the dashboard, based on saved layout / user choice.
+    /// Implementations should return the same instances on every call.
     /// </summary>
     IReadOnlyList<IWidget> CreateWidgets();
 }

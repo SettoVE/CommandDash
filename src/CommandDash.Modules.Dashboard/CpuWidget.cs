@@ -13,6 +13,8 @@ public sealed class CpuWidget : HardwareWidgetBase
 
     public override string Id => "commanddash.home.cpu";
 
+    public override WidgetGridPosition? DefaultPosition => new(1, 0);
+
     public override string DisplayName => "CPU";
 
     public override object CreateView()

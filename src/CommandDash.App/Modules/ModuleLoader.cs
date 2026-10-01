@@ -25,6 +25,7 @@ public sealed class ModuleLoader
     public IReadOnlyList<LoadedModule> LoadFrom(string modulesDirectory)
     {
         var loaded = new List<LoadedModule>();
+        var seenIds = new HashSet<string>();
 
         if (!Directory.Exists(modulesDirectory))
         {
@@ -46,7 +47,17 @@ public sealed class ModuleLoader
                 continue;
             }
 
-            loaded.AddRange(modulesInAssembly);
+            foreach (var module in modulesInAssembly)
+            {
+                if (seenIds.Add(module.Module.Id))
+                {
+                    loaded.Add(module);
+                }
+                else
+                {
+                    _logger?.Warning($"Skipping module from '{dllPath}': id '{module.Module.Id}' is already loaded.");
+                }
+            }
         }
 
         return loaded;

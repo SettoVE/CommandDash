@@ -18,7 +18,7 @@ public partial class DashboardModuleView : UserControl
     /// <summary>Number of equal-width columns in the widget grid.</summary>
     public const int ColumnCount = 2;
 
-    public void AddWidget(string title, object content, WidgetPlacement placement)
+    public void AddWidget(string title, object content, WidgetGridPosition placement)
     {
         if (WidgetGrid.ColumnDefinitions.Count == 0)
         {

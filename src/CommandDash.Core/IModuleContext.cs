@@ -15,6 +15,13 @@ public interface IModuleContext
     /// Application-wide logger the module can use instead of writing its own.
     /// </summary>
     IModuleLogger Logger { get; }
+
+    /// <summary>
+    /// Widgets contributed by every loaded <see cref="IWidgetProvider"/> module, de-duplicated by
+    /// widget id. Intended for widget-hosting surfaces such as the dashboard; call when building
+    /// the page, not during <see cref="IModule.OnLoaded"/>.
+    /// </summary>
+    IReadOnlyList<IWidget> GetAvailableWidgets();
 }
 
 /// <summary>

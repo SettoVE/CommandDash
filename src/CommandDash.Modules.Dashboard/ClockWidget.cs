@@ -8,7 +8,7 @@ namespace CommandDash.Modules.Dashboard;
 /// <summary>
 /// Widget that displays the current local time and date.
 /// </summary>
-public sealed class ClockWidget : IWidget
+public sealed class ClockWidget : IWidget, IGridPositionedWidget
 {
     private readonly DispatcherTimer _timer;
     private TextBlock? _timeText;
@@ -27,6 +27,8 @@ public sealed class ClockWidget : IWidget
     public WidgetSize PreferredSize => WidgetSize.Medium;
 
     public bool IsResizable => false;
+
+    public WidgetGridPosition? DefaultPosition => new(0, 0);
 
     public object CreateView()
     {

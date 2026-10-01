@@ -9,7 +9,7 @@ namespace CommandDash.Modules.Dashboard;
 /// Base for widgets that sample a hardware metric once per second while the dashboard is visible.
 /// Sampling runs on a background thread; results are applied on the UI thread.
 /// </summary>
-public abstract class HardwareWidgetBase : IWidget
+public abstract class HardwareWidgetBase : IWidget, IGridPositionedWidget
 {
     private readonly DispatcherTimer _timer;
     private bool _sampling;
@@ -27,6 +27,8 @@ public abstract class HardwareWidgetBase : IWidget
     public WidgetSize PreferredSize => WidgetSize.Medium;
 
     public bool IsResizable => false;
+
+    public virtual WidgetGridPosition? DefaultPosition => null;
 
     public abstract object CreateView();
 

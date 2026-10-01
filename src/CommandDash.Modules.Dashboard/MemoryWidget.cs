@@ -15,6 +15,8 @@ public sealed class MemoryWidget : HardwareWidgetBase
 
     public override string Id => "commanddash.home.memory";
 
+    public override WidgetGridPosition? DefaultPosition => new(2, 0);
+
     public override string DisplayName => "Memory";
 
     public override object CreateView()

@@ -61,7 +61,7 @@ public partial class MainWindow : Window
 
         foreach (var loadedModule in discovered)
         {
-            var context = new ModuleContext(loadedModule.Module.Id, _logger);
+            var context = new ModuleContext(loadedModule.Module.Id, _logger, _registry.GetWidgets);
             loadedModule.Module.OnLoaded(context);
             _registry.Register(loadedModule.Module);
         }

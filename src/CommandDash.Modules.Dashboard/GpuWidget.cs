@@ -18,6 +18,8 @@ public sealed class GpuWidget : HardwareWidgetBase
 
     public override string Id => "commanddash.home.gpu";
 
+    public override WidgetGridPosition? DefaultPosition => new(1, 1);
+
     public override string DisplayName => "GPU";
 
     public override object CreateView()

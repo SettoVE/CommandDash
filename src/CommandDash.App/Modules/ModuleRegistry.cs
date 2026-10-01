@@ -34,6 +34,29 @@ public sealed class ModuleRegistry
     public IModule? Find(string moduleId) => _modules.FirstOrDefault(m => m.Id == moduleId);
 
     /// <summary>
+    /// Collects widgets from every registered <see cref="IWidgetProvider"/>, in registration
+    /// order. A widget whose id was already contributed is skipped.
+    /// </summary>
+    public IReadOnlyList<IWidget> GetWidgets()
+    {
+        var widgets = new List<IWidget>();
+        var seen = new HashSet<string>();
+
+        foreach (var provider in _modules.OfType<IWidgetProvider>())
+        {
+            foreach (var widget in provider.CreateWidgets())
+            {
+                if (seen.Add(widget.Id))
+                {
+                    widgets.Add(widget);
+                }
+            }
+        }
+
+        return widgets;
+    }
+
+    /// <summary>
     /// Returns all registered modules ordered according to
     /// <paramref name="orderedIds"/> (typically the user's saved sidebar
     /// order). Modules not present in <paramref name="orderedIds"/> are

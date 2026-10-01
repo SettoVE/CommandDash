@@ -13,14 +13,19 @@ public sealed class ModuleContext : IModuleContext
 
     public IModuleLogger Logger { get; }
 
-    public ModuleContext(string moduleId, IModuleLogger logger)
+    private readonly Func<IReadOnlyList<IWidget>> _widgetSource;
+
+    public ModuleContext(string moduleId, IModuleLogger logger, Func<IReadOnlyList<IWidget>> widgetSource)
     {
+        _widgetSource = widgetSource;
         DataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "CommandDash", "Modules", moduleId);
         Directory.CreateDirectory(DataDirectory);
         Logger = logger;
     }
+
+    public IReadOnlyList<IWidget> GetAvailableWidgets() => _widgetSource();
 }
 
 /// <summary>

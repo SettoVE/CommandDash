@@ -6,34 +6,17 @@ namespace CommandDash.Modules.Dashboard;
 /// Built-in Dashboard module. The default landing page, hosting a grid of
 /// widgets (see IWidget/IWidgetProvider).
 /// </summary>
-public sealed class DashboardModule : IModule, IWidgetProvider
+public sealed class DashboardModule : ModuleBase, IWidgetProvider
 {
-    private IModuleContext? _context;
     private IReadOnlyList<IWidget>? _widgets;
 
-    public string Id => "commanddash.home";
+    public override string Id => "commanddash.home";
 
-    public string DisplayName => "Dashboard";
+    public override string DisplayName => "Dashboard";
 
-    public string Description => "At-a-glance overview and customizable widget dashboard.";
+    public override string Description => "At-a-glance overview and customizable widget dashboard.";
 
-    public string Category => "General";
-
-    public string Icon => "\uE80F"; // Segoe Fluent Icons: home glyph placeholder
-
-    public Version Version { get; } = new Version(1, 0, 0);
-
-    public void OnLoaded(IModuleContext context)
-    {
-        _context = context;
-        _context.Logger.Info($"{DisplayName} loaded.");
-    }
-
-    public void OnUnloaded()
-    {
-        _context?.Logger.Info($"{DisplayName} unloaded.");
-        _context = null;
-    }
+    public override string Icon => "\uE80F"; // Segoe Fluent Icons: home glyph placeholder
 
     public IReadOnlyList<IWidget> CreateWidgets() => _widgets ??= new IWidget[]
         {
@@ -44,5 +27,5 @@ public sealed class DashboardModule : IModule, IWidgetProvider
             new MemoryWidget(),
         };
 
-    public IModulePage CreatePage() => new DashboardModulePage(CreateWidgets());
+    public override IModulePage CreatePage() => new DashboardModulePage(Context?.GetAvailableWidgets() ?? CreateWidgets());
 }

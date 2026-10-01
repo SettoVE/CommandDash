@@ -10,29 +10,22 @@ public sealed class DashboardModulePage : IModulePage
     public DashboardModulePage(IReadOnlyList<IWidget> widgets)
     {
         _widgets = widgets;
+
+        // Widgets that request a position keep it; the rest flow left-to-right
+        // into rows below the last explicitly placed row.
+        var positions = widgets.Select(w => (w as IGridPositionedWidget)?.DefaultPosition).ToList();
+        var flowStartRow = positions.Where(p => p.HasValue).Select(p => p!.Value.Row + p.Value.RowSpan).DefaultIfEmpty(0).Max();
+
+        var flowIndex = 0;
         for (var i = 0; i < widgets.Count; i++)
         {
             var widget = widgets[i];
-            _view.AddWidget(widget.DisplayName, widget.CreateView(), GetPlacement(widget, i));
+            var position = positions[i] ?? new WidgetGridPosition(
+                flowStartRow + flowIndex / DashboardModuleView.ColumnCount,
+                flowIndex++ % DashboardModuleView.ColumnCount);
+            _view.AddWidget(widget.DisplayName, widget.CreateView(), position);
         }
     }
-
-    // Explicit placements by widget id (row, column). Widgets not listed fall back to
-    // left-to-right flow after the last explicitly placed row.
-    private static readonly Dictionary<string, WidgetPlacement> Placements = new()
-    {
-        ["commanddash.home.clock"] = new(0, 0),
-        ["commanddash.home.cpu"] = new(1, 0),
-        ["commanddash.home.gpu"] = new(1, 1),
-        ["commanddash.home.memory"] = new(2, 0),
-        ["commanddash.home.network"] = new(2, 1),
-    };
-
-    private static WidgetPlacement GetPlacement(IWidget widget, int index) =>
-        Placements.TryGetValue(widget.Id, out var placement)
-            ? placement
-            : new(Placements.Count > 0 ? 3 + index / DashboardModuleView.ColumnCount : index / DashboardModuleView.ColumnCount,
-                  index % DashboardModuleView.ColumnCount);
 
     public object View => _view;
 
