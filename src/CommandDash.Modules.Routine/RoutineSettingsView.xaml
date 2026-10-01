@@ -18,8 +18,8 @@
             <Button Content="Add Category" Padding="10,3" Margin="0,0,6,0" Click="AddCategory_Click"/>
             <Button Content="Add Item" Padding="10,3" Margin="0,0,6,0" Click="AddItem_Click"/>
             <Button Content="Remove" Padding="10,3" Margin="0,0,6,0" Click="Remove_Click"/>
-            <Button Content="&#x25B2;" Width="28" Margin="0,0,6,0" ToolTip="Move up" Click="MoveUp_Click"/>
-            <Button Content="&#x25BC;" Width="28" ToolTip="Move down" Click="MoveDown_Click"/>
+            <Button Content="&#x25B2;" Width="28" Padding="0,3" Margin="0,0,6,0" ToolTip="Move up" Click="MoveUp_Click"/>
+            <Button Content="&#x25BC;" Width="28" Padding="0,3" ToolTip="Move down" Click="MoveDown_Click"/>
         </StackPanel>
         <TreeView x:Name="Tree" Background="Transparent" BorderThickness="1"
                   BorderBrush="{DynamicResource BorderBrush2}"

@@ -13,14 +13,26 @@ public sealed class DashboardModulePage : IModulePage
         for (var i = 0; i < widgets.Count; i++)
         {
             var widget = widgets[i];
-            _view.AddWidget(widget.DisplayName, widget.CreateView(), GetPlacement(i));
+            _view.AddWidget(widget.DisplayName, widget.CreateView(), GetPlacement(widget, i));
         }
     }
 
-    // Default flow layout: fill columns left to right, then wrap to the next row.
-    // Replace with a configurable lookup (e.g. by widget id) for custom placement.
-    private static WidgetPlacement GetPlacement(int index) =>
-        new(index / DashboardModuleView.ColumnCount, index % DashboardModuleView.ColumnCount);
+    // Explicit placements by widget id (row, column). Widgets not listed fall back to
+    // left-to-right flow after the last explicitly placed row.
+    private static readonly Dictionary<string, WidgetPlacement> Placements = new()
+    {
+        ["commanddash.home.clock"] = new(0, 0),
+        ["commanddash.home.cpu"] = new(1, 0),
+        ["commanddash.home.gpu"] = new(1, 1),
+        ["commanddash.home.memory"] = new(2, 0),
+        ["commanddash.home.network"] = new(2, 1),
+    };
+
+    private static WidgetPlacement GetPlacement(IWidget widget, int index) =>
+        Placements.TryGetValue(widget.Id, out var placement)
+            ? placement
+            : new(Placements.Count > 0 ? 3 + index / DashboardModuleView.ColumnCount : index / DashboardModuleView.ColumnCount,
+                  index % DashboardModuleView.ColumnCount);
 
     public object View => _view;
 

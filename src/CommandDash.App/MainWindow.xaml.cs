@@ -368,6 +368,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (e.Key == Key.F1)
+        {
+            OpenSettings_Click(sender, e);
+            e.Handled = true;
+            return;
+        }
+
         var index = Array.IndexOf(NumberKeysInOrder, e.Key);
         if (index < 0)
         {

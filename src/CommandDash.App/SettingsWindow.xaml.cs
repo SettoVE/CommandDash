@@ -23,6 +23,15 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         TitleBarTheme.Apply(this);
 
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+            {
+                Close();
+                e.Handled = true;
+            }
+        };
+
         _rootNodes = rootNodes.ToList();
         BuildTree();
     }

@@ -5,7 +5,7 @@ using CommandDash.Core;
 namespace CommandDash.App.Settings;
 
 /// <summary>
-/// Reorder UI for modules: move items up/down and save the new order.
+/// Reorder UI for modules: move items up/down; each move is saved immediately.
 /// Hosted as the content of <see cref="ModuleOrderSettingsNode"/>.
 /// </summary>
 public partial class ModuleOrderView : UserControl
@@ -46,6 +46,7 @@ public partial class ModuleOrderView : UserControl
         (_orderedModules[index - 1], _orderedModules[index]) = (_orderedModules[index], _orderedModules[index - 1]);
         RefreshList();
         ModuleListBox.SelectedIndex = index - 1;
+        SaveOrder();
     }
 
     private void MoveDown_Click(object sender, RoutedEventArgs e)
@@ -59,9 +60,10 @@ public partial class ModuleOrderView : UserControl
         (_orderedModules[index + 1], _orderedModules[index]) = (_orderedModules[index], _orderedModules[index + 1]);
         RefreshList();
         ModuleListBox.SelectedIndex = index + 1;
+        SaveOrder();
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private void SaveOrder()
     {
         _settings.Save(_orderedModules.Select(m => m.Id).ToList());
         OrderSaved?.Invoke(this, EventArgs.Empty);
