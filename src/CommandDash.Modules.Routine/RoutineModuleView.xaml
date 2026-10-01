@@ -22,7 +22,7 @@
                         <TextBlock Grid.Column="1" Text="{Binding ElapsedText}" FontSize="20"
                                    VerticalAlignment="Center" Margin="16,0" MinWidth="120" TextAlignment="Right"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
-                        <Button Grid.Column="2" Content="Complete" FontSize="14" Padding="14,6"
+                        <Button Grid.Column="2" Content="Complete" FontSize="14" Padding="14,6" Style="{DynamicResource PrimaryButtonStyle}"
                                 VerticalAlignment="Center" Click="Complete_Click"/>
                     </Grid>
                 </Grid>

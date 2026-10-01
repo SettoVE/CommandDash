@@ -69,6 +69,7 @@ internal static class RoutineDialogs
     {
         var ok = new Button { Content = "OK", IsDefault = true, MinWidth = 70, Margin = new Thickness(0, 0, 8, 0) };
         var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 70 };
+        ok.SetResourceReference(FrameworkElement.StyleProperty, "PrimaryButtonStyle");
         ok.Click += (_, _) => window.DialogResult = true;
         panel.Children.Add(new StackPanel
         {
