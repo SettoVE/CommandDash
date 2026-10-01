@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.1" />
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
   </ItemGroup>
 

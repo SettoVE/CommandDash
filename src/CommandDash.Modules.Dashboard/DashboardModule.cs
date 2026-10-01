@@ -35,7 +35,14 @@ public sealed class DashboardModule : IModule, IWidgetProvider
         _context = null;
     }
 
-    public IReadOnlyList<IWidget> CreateWidgets() => _widgets ??= new IWidget[] { new ClockWidget() };
+    public IReadOnlyList<IWidget> CreateWidgets() => _widgets ??= new IWidget[]
+        {
+            new ClockWidget(),
+            new NetworkWidget(),
+            new CpuWidget(),
+            new GpuWidget(),
+            new MemoryWidget(),
+        };
 
     public IModulePage CreatePage() => new DashboardModulePage(CreateWidgets());
 }

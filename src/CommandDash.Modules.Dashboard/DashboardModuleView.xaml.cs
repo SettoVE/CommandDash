@@ -15,19 +15,33 @@ public partial class DashboardModuleView : UserControl
         InitializeComponent();
     }
 
-    public void AddWidget(string title, WidgetSize size, object content)
-    {
-        var (cols, rows) = size switch
-        {
-            WidgetSize.Small => (1, 1),
-            WidgetSize.Medium => (2, 1),
-            WidgetSize.Large => (2, 2),
-            WidgetSize.Wide => (4, 1),
-            _ => (2, 1),
-        };
+    /// <summary>Number of equal-width columns in the widget grid.</summary>
+    public const int ColumnCount = 2;
 
-        var header = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, Margin = new Thickness(12, 8, 12, 0) };
-        header.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+    public void AddWidget(string title, object content, WidgetPlacement placement)
+    {
+        if (WidgetGrid.ColumnDefinitions.Count == 0)
+        {
+            for (var c = 0; c < ColumnCount; c++)
+                WidgetGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        }
+
+        var lastRow = placement.Row + placement.RowSpan - 1;
+        while (WidgetGrid.RowDefinitions.Count <= lastRow)
+            WidgetGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var column = Math.Clamp(placement.Column, 0, ColumnCount - 1);
+        var card = CreateCard(title, content);
+        Grid.SetRow(card, placement.Row);
+        Grid.SetColumn(card, column);
+        Grid.SetColumnSpan(card, Math.Clamp(placement.ColumnSpan, 1, ColumnCount - column));
+        Grid.SetRowSpan(card, placement.RowSpan);
+        WidgetGrid.Children.Add(card);
+    }
+
+    private static Border CreateCard(string title, object content)
+    {
+        var header = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, Margin = new Thickness(12, 8, 12, 0) };        header.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
 
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -39,12 +53,12 @@ public partial class DashboardModuleView : UserControl
 
         var card = new Border
         {
-            Width = cols * CellSize,
-            Height = rows * CellSize,
+            Height = CellSize,
             Margin = new Thickness(0, 0, 8, 8),
             ClipToBounds = true,
         };
-        card.Clip = new RectangleGeometry(new Rect(0, 0, card.Width, card.Height), CornerRadius, CornerRadius);
+        card.SizeChanged += (_, e) =>
+            card.Clip = new RectangleGeometry(new Rect(0, 0, e.NewSize.Width, e.NewSize.Height), CornerRadius, CornerRadius);
 
         var layers = new Grid();
 
@@ -65,6 +79,6 @@ public partial class DashboardModuleView : UserControl
         layers.Children.Add(grid);
 
         card.Child = layers;
-        WidgetPanel.Children.Add(card);
+        return card;
     }
 }

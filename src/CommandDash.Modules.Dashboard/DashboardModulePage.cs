@@ -10,11 +10,17 @@ public sealed class DashboardModulePage : IModulePage
     public DashboardModulePage(IReadOnlyList<IWidget> widgets)
     {
         _widgets = widgets;
-        foreach (var widget in widgets)
+        for (var i = 0; i < widgets.Count; i++)
         {
-            _view.AddWidget(widget.DisplayName, widget.PreferredSize, widget.CreateView());
+            var widget = widgets[i];
+            _view.AddWidget(widget.DisplayName, widget.CreateView(), GetPlacement(i));
         }
     }
+
+    // Default flow layout: fill columns left to right, then wrap to the next row.
+    // Replace with a configurable lookup (e.g. by widget id) for custom placement.
+    private static WidgetPlacement GetPlacement(int index) =>
+        new(index / DashboardModuleView.ColumnCount, index % DashboardModuleView.ColumnCount);
 
     public object View => _view;
 
