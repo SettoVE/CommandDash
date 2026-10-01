@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private readonly IModuleLogger _logger = new DebugModuleLogger();
     private readonly ModuleOrderSettings _orderSettings = new();
     private readonly ModuleBackgroundSettings _backgroundSettings = new();
+    private readonly WindowPlacementSettings _placementSettings = new();
     private string? _currentModuleId;
     private IModulePage? _currentPage;
 
@@ -35,6 +36,9 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         TitleBarTheme.Apply(this);
+
+        _placementSettings.Restore(this);
+        Closing += (_, _) => _placementSettings.Save(this);
 
         _backgroundSettings.BackgroundChanged += (_, moduleId) =>
         {
