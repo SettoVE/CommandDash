@@ -47,8 +47,8 @@ public sealed class NetworkWidget : HardwareWidgetBase
 
     public override object CreateView()
     {
-        _downText = CreateText(24, "TextPrimaryBrush", FontWeights.SemiBold);
-        _upText = CreateText(24, "TextPrimaryBrush", FontWeights.SemiBold);
+        _downText = CreateText(20, "TextPrimaryBrush", FontWeights.SemiBold);
+        _upText = CreateText(20, "TextPrimaryBrush", FontWeights.SemiBold);
         _downValue = new Run(" --");
         _upValue = new Run(" --");
         var downArrow = new Run("⬇");
@@ -59,9 +59,9 @@ public sealed class NetworkWidget : HardwareWidgetBase
         _downText.Inlines.Add(_downValue);
         _upText.Inlines.Add(upArrow);
         _upText.Inlines.Add(_upValue);
-        var speeds = new Grid { HorizontalAlignment = HorizontalAlignment.Left };
-        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
-        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
+        var speeds = new Grid { HorizontalAlignment = HorizontalAlignment.Stretch };
+        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         Grid.SetColumn(_upText, 1);
         speeds.Children.Add(_downText);
         speeds.Children.Add(_upText);

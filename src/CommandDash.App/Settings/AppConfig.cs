@@ -88,7 +88,7 @@ public sealed class AppConfig
             }
 
             var eq = line.IndexOf('=');
-            if (eq <= 0 || !section.Equals("Window", StringComparison.OrdinalIgnoreCase)) continue;
+            if (eq <= 0 || !IsKnownSection(section)) continue;
 
             var key = line[..eq].Trim();
             var value = line[(eq + 1)..].Trim();
@@ -102,6 +102,11 @@ public sealed class AppConfig
             }
         }
     }
+
+    private static bool IsKnownSection(string section)
+        => section.Equals("Window", StringComparison.OrdinalIgnoreCase)
+           || section.Equals("Resolution", StringComparison.OrdinalIgnoreCase)
+           || section.Equals("Position", StringComparison.OrdinalIgnoreCase);
 
     private static double? ParseDouble(string value)
         => double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d) && double.IsFinite(d) ? d : null;
