@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private readonly IModuleLogger _logger = new DebugModuleLogger();
     private readonly ModuleOrderSettings _orderSettings = new();
     private readonly ModuleBackgroundSettings _backgroundSettings = new();
+    private GlobalHotkey? _hotkey;
     private string? _currentModuleId;
     private IModulePage? _currentPage;
 
@@ -371,8 +372,16 @@ public partial class MainWindow : Window
         BackgroundPanel.Background = null;
     }
 
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        _hotkey = new GlobalHotkey(this);
+        _hotkey.Attach();
+    }
+
     protected override void OnClosed(EventArgs e)
     {
+        _hotkey?.Dispose();
         _currentPage?.OnNavigatedFrom();
         _currentPage = null;
 
