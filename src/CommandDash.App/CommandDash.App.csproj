@@ -15,6 +15,11 @@
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <!-- Any Assets\LoadingBackground.* file (case-insensitive) is embedded as the loading screen background. -->
+  <ItemGroup>
+    <Resource Include="Assets\LoadingBackground.*" Link="Assets\LoadingBackground.img" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
     <!-- Not referenced for compilation (ReferenceOutputAssembly=false); these

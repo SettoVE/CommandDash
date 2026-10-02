@@ -32,10 +32,32 @@ public partial class MainWindow : Window
     private string? _currentModuleId;
     private IModulePage? _currentPage;
 
+    private void TryApplyLoadingBackground()
+    {
+        try
+        {
+            var image = new System.Windows.Media.Imaging.BitmapImage();
+            image.BeginInit();
+            image.UriSource = new Uri("pack://application:,,,/Assets/LoadingBackground.img", UriKind.Absolute);
+            image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+            image.EndInit();
+            image.Freeze();
+            LoadingOverlay.Background = new System.Windows.Media.ImageBrush(image)
+            {
+                Stretch = System.Windows.Media.Stretch.UniformToFill,
+            };
+        }
+        catch
+        {
+            // Missing or invalid image: keep the default background.
+        }
+    }
+
     public MainWindow()
     {
         InitializeComponent();
         TitleBarTheme.Apply(this);
+        TryApplyLoadingBackground();
 
         var config = AppConfig.Load();
         Title = config.Title;
