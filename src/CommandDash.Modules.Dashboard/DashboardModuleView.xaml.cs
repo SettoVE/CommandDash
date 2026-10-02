@@ -18,7 +18,7 @@ public partial class DashboardModuleView : UserControl
     /// <summary>Number of equal-width columns in the widget grid.</summary>
     public const int ColumnCount = 2;
 
-    public void AddWidget(string title, object content, WidgetGridPosition placement)
+    public void AddWidget(string title, object content, WidgetGridPosition placement, string? subtitle = null)
     {
         if (WidgetGrid.ColumnDefinitions.Count == 0)
         {
@@ -31,7 +31,7 @@ public partial class DashboardModuleView : UserControl
             WidgetGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var column = Math.Clamp(placement.Column, 0, ColumnCount - 1);
-        var card = CreateCard(title, content);
+        var card = CreateCard(title, content, subtitle);
         Grid.SetRow(card, placement.Row);
         Grid.SetColumn(card, column);
         Grid.SetColumnSpan(card, Math.Clamp(placement.ColumnSpan, 1, ColumnCount - column));
@@ -39,9 +39,32 @@ public partial class DashboardModuleView : UserControl
         WidgetGrid.Children.Add(card);
     }
 
-    private static Border CreateCard(string title, object content)
+    private static Border CreateCard(string title, object content, string? subtitle)
     {
-        var header = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold, Margin = new Thickness(12, 8, 12, 0) };        header.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+        var titleText = new TextBlock { Text = title, FontWeight = FontWeights.SemiBold };
+        titleText.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+
+        var header = new Grid { Margin = new Thickness(12, 8, 12, 0) };
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        header.Children.Add(titleText);
+        if (!string.IsNullOrEmpty(subtitle))
+        {
+            var subtitleText = new TextBlock
+            {
+                Text = subtitle,
+                FontSize = 11,
+                Margin = new Thickness(12, 0, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextAlignment = TextAlignment.Right,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                ToolTip = subtitle,
+            };
+            subtitleText.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+            Grid.SetColumn(subtitleText, 1);
+            header.Children.Add(subtitleText);
+        }
 
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });

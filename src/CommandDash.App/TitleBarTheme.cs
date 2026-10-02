@@ -19,31 +19,48 @@ internal static class TitleBarTheme
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
+    /// <summary>
+    /// Themes the title bar of every window the app opens (including windows created by
+    /// modules) once it has a native handle. Call once at startup.
+    /// </summary>
+    public static void RegisterForAllWindows() =>
+        EventManager.RegisterClassHandler(
+            typeof(Window),
+            FrameworkElement.LoadedEvent,
+            new RoutedEventHandler((sender, _) =>
+            {
+                if (sender is Window window)
+                {
+                    ApplyTo(new WindowInteropHelper(window).Handle);
+                }
+            }));
+
     public static void Apply(Window window)
     {
-        window.SourceInitialized += (_, _) =>
+        window.SourceInitialized += (_, _) => ApplyTo(new WindowInteropHelper(window).Handle);
+    }
+
+    private static void ApplyTo(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero)
         {
-            var handle = new WindowInteropHelper(window).Handle;
-            if (handle == IntPtr.Zero)
-            {
-                return;
-            }
+            return;
+        }
 
-            var dark = 1;
-            DwmSetWindowAttribute(handle, DwmwaUseImmersiveDarkMode, ref dark, sizeof(int));
+        var dark = 1;
+        DwmSetWindowAttribute(handle, DwmwaUseImmersiveDarkMode, ref dark, sizeof(int));
 
-            if (Application.Current.TryFindResource("BackgroundColor") is Color background)
-            {
-                var caption = ToColorRef(background);
-                DwmSetWindowAttribute(handle, DwmwaCaptionColor, ref caption, sizeof(int));
-            }
+        if (Application.Current.TryFindResource("BackgroundColor") is Color background)
+        {
+            var caption = ToColorRef(background);
+            DwmSetWindowAttribute(handle, DwmwaCaptionColor, ref caption, sizeof(int));
+        }
 
-            if (Application.Current.TryFindResource("TextPrimaryColor") is Color text)
-            {
-                var textColor = ToColorRef(text);
-                DwmSetWindowAttribute(handle, DwmwaTextColor, ref textColor, sizeof(int));
-            }
-        };
+        if (Application.Current.TryFindResource("TextPrimaryColor") is Color text)
+        {
+            var textColor = ToColorRef(text);
+            DwmSetWindowAttribute(handle, DwmwaTextColor, ref textColor, sizeof(int));
+        }
     }
 
     // COLORREF is 0x00BBGGRR.

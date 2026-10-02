@@ -35,6 +35,15 @@
 
   <!-- Copy each built-in module's build output into this app's Modules/
        folder so ModuleLoader can discover it at startup. -->
+  <ItemGroup>
+    <!-- Module projects are referenced with ReferenceOutputAssembly=false, so Visual Studio's
+         fast up-to-date check would otherwise skip this project (and the copy below) when
+         only a module changed. -->
+    <UpToDateCheckInput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Dashboard.dll" />
+    <UpToDateCheckInput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.RunScript.dll" />
+    <UpToDateCheckInput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Tasks.dll" />
+    <UpToDateCheckInput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.dll" />
+  </ItemGroup>
   <Target Name="CopyModulesToModulesFolder" AfterTargets="Build">
     <ItemGroup>
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Dashboard.dll" />

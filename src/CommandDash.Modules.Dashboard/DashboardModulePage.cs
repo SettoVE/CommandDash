@@ -23,7 +23,7 @@ public sealed class DashboardModulePage : IModulePage
             var position = positions[i] ?? new WidgetGridPosition(
                 flowStartRow + flowIndex / DashboardModuleView.ColumnCount,
                 flowIndex++ % DashboardModuleView.ColumnCount);
-            _view.AddWidget(widget.DisplayName, widget.CreateView(), position);
+            _view.AddWidget(widget.DisplayName, widget.CreateView(), position, (widget as IWidgetSubtitle)?.Subtitle);
         }
     }
 

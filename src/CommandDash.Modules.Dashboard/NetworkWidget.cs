@@ -3,6 +3,7 @@ using System.Net.NetworkInformation;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace CommandDash.Modules.Dashboard;
 
@@ -31,7 +32,10 @@ public sealed class NetworkWidget : HardwareWidgetBase
     private long _month;
     private long _day;
 
-    private TextBlock? _speeds;
+    private TextBlock? _downText;
+    private TextBlock? _upText;
+    private Run? _downValue;
+    private Run? _upValue;
     private TextBlock? _monthText;
     private TextBlock? _dayText;
 
@@ -43,12 +47,28 @@ public sealed class NetworkWidget : HardwareWidgetBase
 
     public override object CreateView()
     {
-        _speeds = CreateText(20, "TextPrimaryBrush", FontWeights.SemiBold);
-        _speeds.Text = "↓ --   ↑ --";
+        _downText = CreateText(24, "TextPrimaryBrush", FontWeights.SemiBold);
+        _upText = CreateText(24, "TextPrimaryBrush", FontWeights.SemiBold);
+        _downValue = new Run(" --");
+        _upValue = new Run(" --");
+        var downArrow = new Run("⬇");
+        downArrow.SetResourceReference(TextElement.ForegroundProperty, "DownloadBrush");
+        var upArrow = new Run("⬆");
+        upArrow.SetResourceReference(TextElement.ForegroundProperty, "UploadBrush");
+        _downText.Inlines.Add(downArrow);
+        _downText.Inlines.Add(_downValue);
+        _upText.Inlines.Add(upArrow);
+        _upText.Inlines.Add(_upValue);
+        var speeds = new Grid { HorizontalAlignment = HorizontalAlignment.Left };
+        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
+        speeds.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(130) });
+        Grid.SetColumn(_upText, 1);
+        speeds.Children.Add(_downText);
+        speeds.Children.Add(_upText);
         _dayText = CreateText(14, "TextSecondaryBrush");
         _monthText = CreateText(14, "TextSecondaryBrush");
         _dayText.Margin = new Thickness(0, 8, 0, 0);
-        return CreatePanel(_speeds, _dayText, _monthText);
+        return CreatePanel(speeds, _dayText, _monthText);
     }
 
     protected override void Sample()
@@ -163,9 +183,10 @@ public sealed class NetworkWidget : HardwareWidgetBase
 
     protected override void UpdateView()
     {
-        if (_speeds is not null) _speeds.Text = $"↓ {FormatSpeed(_downSpeed)}   ↑ {FormatSpeed(_upSpeed)}";
-        if (_dayText is not null) _dayText.Text = $"Last 24 hours: {FormatBytes(_day)}";
-        if (_monthText is not null) _monthText.Text = $"This month: {FormatBytes(_month)}";
+        if (_downValue is not null) _downValue.Text = $" {FormatSpeed(_downSpeed)}";
+        if (_upValue is not null) _upValue.Text = $" {FormatSpeed(_upSpeed)}";
+        if (_dayText is not null) _dayText.Text = $"24 hr: {FormatBytes(_day)}";
+        if (_monthText is not null) _monthText.Text = $"Month: {FormatBytes(_month)}";
     }
 
     private static string FormatSpeed(double bytesPerSecond) => FormatBytes(bytesPerSecond) + "/s";

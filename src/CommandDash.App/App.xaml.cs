@@ -4,4 +4,8 @@ namespace CommandDash.App;
 
 public partial class App : Application
 {
+    public App()
+    {
+        TitleBarTheme.RegisterForAllWindows();
+    }
 }

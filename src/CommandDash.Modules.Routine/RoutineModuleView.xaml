@@ -38,8 +38,6 @@
     </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="4">
-            <TextBlock Text="Routine" FontSize="22" FontWeight="Bold"
-                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
             <ItemsControl x:Name="CategoryList"/>
         </StackPanel>
     </ScrollViewer>

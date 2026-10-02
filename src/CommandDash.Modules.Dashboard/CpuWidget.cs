@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 namespace CommandDash.Modules.Dashboard;
 
-public sealed class CpuWidget : HardwareWidgetBase
+public sealed class CpuWidget : HardwareWidgetBase, IWidgetSubtitle
 {
     private PerformanceCounter? _counter;
     private TextBlock? _value;
@@ -17,11 +17,14 @@ public sealed class CpuWidget : HardwareWidgetBase
 
     public override string DisplayName => "CPU";
 
+    public string? Subtitle => HardwareInfo.CpuName;
+
     public override object CreateView()
     {
         _value = CreateText(32, "TextPrimaryBrush", FontWeights.SemiBold);
         _value.Text = "--%";
         _bar = CreateBar();
+        _bar.Margin = new Thickness(0, 14, 0, 0);
         return CreatePanel(_value, _bar);
     }
 
