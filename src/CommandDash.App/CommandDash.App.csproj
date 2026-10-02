@@ -9,13 +9,10 @@
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
+  <!-- If Assets\app.ico exists at build time it becomes the exe's icon (file icon and pinned taskbar icon). -->
   <PropertyGroup Condition="Exists('Assets\app.ico')">
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
-
-  <ItemGroup Condition="Exists('Assets\app.ico')">
-    <Resource Include="Assets\app.ico" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
