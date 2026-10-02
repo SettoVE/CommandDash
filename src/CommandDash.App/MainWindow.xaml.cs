@@ -400,6 +400,11 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (Keyboard.Modifiers != ModifierKeys.None)
+        {
+            return;
+        }
+
         var index = Array.IndexOf(NumberKeysInOrder, e.Key);
         if (index < 0)
         {

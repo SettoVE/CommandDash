@@ -54,6 +54,7 @@
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.pdb" />
     </ItemGroup>
     <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
+    <MakeDir Directories="$(OutDir)scripts" />
   </Target>
 
 </Project>

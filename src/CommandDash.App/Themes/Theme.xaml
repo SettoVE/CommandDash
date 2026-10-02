@@ -45,6 +45,7 @@
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
     <SolidColorBrush x:Key="BorderBrush2" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="ErrorBrush" Color="#FFF04747"/>
     <SolidColorBrush x:Key="SelectionTintBrush" Color="{StaticResource SelectionTintColor}"/>
     <!-- Glass brushes: dashboard widget cards and the Routine view panel (fill, outline and top-left highlight). -->
     <SolidColorBrush x:Key="WidgetGlassBrush" Color="#992F3136"/>

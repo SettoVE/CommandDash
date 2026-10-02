@@ -5,8 +5,15 @@
     <StackPanel Margin="4">
         <local:SettingsSectionHeader Title="Backgrounds"/>
 
-        <ComboBox x:Name="ModuleComboBox" DisplayMemberPath="DisplayName"
-                  SelectionChanged="ModuleComboBox_SelectionChanged"/>
+        <ComboBox x:Name="ModuleComboBox"
+                  SelectionChanged="ModuleComboBox_SelectionChanged">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
 
         <Grid Margin="0,8,0,0">
             <Grid.ColumnDefinitions>

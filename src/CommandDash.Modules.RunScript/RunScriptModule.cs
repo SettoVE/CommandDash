@@ -1,13 +1,15 @@
+using System.IO;
 using CommandDash.Core;
 
 namespace CommandDash.Modules.RunScript;
 
 /// <summary>
-/// Placeholder built-in module for running user-defined scripts
-/// (PowerShell, batch, etc.) from the shell.
+/// Runs scripts (Python, PowerShell, Ruby, batch) from a configurable folder.
 /// </summary>
-public sealed class RunScriptModule : ModuleBase
+public sealed class RunScriptModule : ModuleBase, IModuleWithSettings
 {
+    private RunScriptStore? _store;
+
     public override string Id => "commanddash.runscript";
 
     public override string DisplayName => "Run Script";
@@ -16,5 +18,12 @@ public sealed class RunScriptModule : ModuleBase
 
     public override string Icon => "\uE756"; // Segoe Fluent Icons: script/code glyph placeholder
 
-    public override IModulePage CreatePage() => new RunScriptModulePage();
+    private RunScriptStore Store => _store ??= new RunScriptStore(
+        Context?.DataDirectory
+        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandDash", "RunScript"));
+
+    public override IModulePage CreatePage() => new RunScriptModulePage(Store);
+
+    public ISettingsNode GetSettingsNode()
+        => new SettingsNode("commanddash.runscript.settings", DisplayName, () => new RunScriptSettingsView(Store));
 }
