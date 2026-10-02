@@ -20,6 +20,11 @@ public interface IWidget
     string DisplayName { get; }
 
     /// <summary>
+    /// Optional secondary text shown right-aligned in the widget's header row.
+    /// </summary>
+    string? Subtitle => null;
+
+    /// <summary>
     /// Preferred size for this widget when first added to a dashboard.
     /// The host may allow the user to resize it afterwards if
     /// <see cref="IsResizable"/> is true.

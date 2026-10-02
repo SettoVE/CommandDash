@@ -24,6 +24,8 @@ public abstract class HardwareWidgetBase : IWidget, IGridPositionedWidget
 
     public abstract string DisplayName { get; }
 
+    public virtual string? Subtitle => null;
+
     public WidgetSize PreferredSize => WidgetSize.Medium;
 
     public bool IsResizable => false;

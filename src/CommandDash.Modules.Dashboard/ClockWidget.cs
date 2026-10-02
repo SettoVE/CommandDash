@@ -35,7 +35,7 @@ public sealed class ClockWidget : IWidget, IGridPositionedWidget
         _timeText = new TextBlock { FontSize = 32, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center };
         _timeText.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
         _dateText = new TextBlock { FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center };
-        _dateText.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+        _dateText.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
 
         var panel = new StackPanel { Margin = new Thickness(16), VerticalAlignment = VerticalAlignment.Center };
         panel.Children.Add(_timeText);

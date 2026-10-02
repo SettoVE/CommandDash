@@ -8,7 +8,7 @@ namespace CommandDash.Modules.Dashboard;
 /// GPU usage from the Windows "GPU Engine" performance counters (same source as Task Manager).
 /// Utilization is summed per engine type; the busiest engine type is reported.
 /// </summary>
-public sealed class GpuWidget : HardwareWidgetBase, IWidgetSubtitle
+public sealed class GpuWidget : HardwareWidgetBase
 {
     private readonly Dictionary<string, PerformanceCounter> _counters = new();
     private DateTime _lastRefresh = DateTime.MinValue;
@@ -22,7 +22,7 @@ public sealed class GpuWidget : HardwareWidgetBase, IWidgetSubtitle
 
     public override string DisplayName => "GPU";
 
-    public string? Subtitle => HardwareInfo.GpuName;
+    public override string? Subtitle => HardwareInfo.GpuName;
 
     public override object CreateView()
     {

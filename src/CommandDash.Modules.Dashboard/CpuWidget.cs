@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 namespace CommandDash.Modules.Dashboard;
 
-public sealed class CpuWidget : HardwareWidgetBase, IWidgetSubtitle
+public sealed class CpuWidget : HardwareWidgetBase
 {
     private PerformanceCounter? _counter;
     private TextBlock? _value;
@@ -17,7 +17,7 @@ public sealed class CpuWidget : HardwareWidgetBase, IWidgetSubtitle
 
     public override string DisplayName => "CPU";
 
-    public string? Subtitle => HardwareInfo.CpuName;
+    public override string? Subtitle => HardwareInfo.CpuName;
 
     public override object CreateView()
     {
