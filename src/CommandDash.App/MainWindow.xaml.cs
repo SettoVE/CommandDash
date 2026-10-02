@@ -79,7 +79,7 @@ public partial class MainWindow : Window
             var module = orderedModules[i];
             var shortcutDigit = i < 10 ? ((i + 1) % 10).ToString() : null;
             var label = shortcutDigit is not null
-                ? $"[{shortcutDigit}]    {module.DisplayName}"
+                ? $"[{shortcutDigit}]  {module.DisplayName}"
                 : module.DisplayName;
 
             var navItem = new RadioButton
