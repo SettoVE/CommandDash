@@ -62,9 +62,67 @@ public partial class MainWindow : Window
             }
         };
 
-        LoadModules();
+        // Defer heavy work until the window (with the loading overlay) has been rendered.
+        Loaded += async (_, _) => await InitializeAsync();
+    }
+
+    private void ReportProgress(string status, int? step = null, int? total = null)
+    {
+        LoadingStatus.Text = status;
+        if (step is { } s && total is { } t)
+        {
+            LoadingProgress.IsIndeterminate = false;
+            LoadingProgress.Maximum = t;
+            LoadingProgress.Value = s;
+        }
+    }
+
+    private Task RenderAsync() =>
+        Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Background).Task;
+
+    private async Task InitializeAsync()
+    {
+        ReportProgress("Discovering modules…");
+        var modulesDirectory = Path.Combine(AppContext.BaseDirectory, "modules");
+        var discovered = await Task.Run(() => new ModuleLoader(_logger).LoadFrom(modulesDirectory));
+
+        var count = discovered.Count;
+        var total = (count * 2) + 2;
+        for (var i = 0; i < count; i++)
+        {
+            var loadedModule = discovered[i];
+            ReportProgress($"Initializing {loadedModule.Module.DisplayName}…", i, total);
+            await RenderAsync();
+
+            var context = new ModuleContext(loadedModule.Module.Id, _logger, _registry.GetWidgets);
+            loadedModule.Module.OnLoaded(context);
+            _registry.Register(loadedModule.Module);
+        }
+
+        ReportProgress("Building navigation…", count, total);
+        await RenderAsync();
         BuildSidebar();
+
+        var modules = _registry.Modules.ToList();
+        for (var i = 0; i < modules.Count; i++)
+        {
+            var module = modules[i];
+            ReportProgress($"Preparing {module.DisplayName}…", count + 1 + i, total);
+            await RenderAsync();
+
+            if (!_activePages.ContainsKey(module.Id))
+            {
+                _activePages[module.Id] = module.CreatePage();
+            }
+
+            await PreloadBackgroundAsync(module.Id);
+        }
+
+        ReportProgress("Opening dashboard…", total - 1, total);
+        await RenderAsync();
         NavigateToDefaultModule();
+
+        LoadingOverlay.Visibility = Visibility.Collapsed;
     }
 
     // Ignores a saved position that would leave the window off-screen (e.g. a monitor was removed).
@@ -77,20 +135,6 @@ public partial class MainWindow : Window
             SystemParameters.VirtualScreenHeight);
         var visible = Rect.Intersect(bounds, screen);
         return !visible.IsEmpty && visible.Width >= 100 && visible.Height >= 50;
-    }
-
-    private void LoadModules()
-    {
-        var modulesDirectory = Path.Combine(AppContext.BaseDirectory, "modules");
-        var loader = new ModuleLoader(_logger);
-        var discovered = loader.LoadFrom(modulesDirectory);
-
-        foreach (var loadedModule in discovered)
-        {
-            var context = new ModuleContext(loadedModule.Module.Id, _logger, _registry.GetWidgets);
-            loadedModule.Module.OnLoaded(context);
-            _registry.Register(loadedModule.Module);
-        }
     }
 
     private void BuildSidebar()
@@ -313,12 +357,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var image = new System.Windows.Media.Imaging.BitmapImage();
-            image.BeginInit();
-            image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-            image.UriSource = new Uri(path, UriKind.Absolute);
-            image.EndInit();
-            image.Freeze();
+            var image = LoadImage(path);
 
             CommitFade();
             _shownPath = path;
@@ -351,6 +390,64 @@ public partial class MainWindow : Window
         {
             _logger.Error($"Failed to load background image '{path}'.", ex);
             ClearBackground();
+        }
+    }
+
+    private readonly Dictionary<string, (DateTime Stamp, System.Windows.Media.Imaging.BitmapImage Image)> _imageCache = new();
+
+    private static System.Windows.Media.Imaging.BitmapImage DecodeImage(string path, int pixelWidth)
+    {
+        var image = new System.Windows.Media.Imaging.BitmapImage();
+        image.BeginInit();
+        image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+        image.DecodePixelWidth = pixelWidth;
+        image.UriSource = new Uri(path, UriKind.Absolute);
+        image.EndInit();
+        image.Freeze();
+        return image;
+    }
+
+    private void StoreImage(string path, DateTime stamp, System.Windows.Media.Imaging.BitmapImage image)
+    {
+        if (_imageCache.Count >= 12)
+        {
+            _imageCache.Clear();
+        }
+
+        _imageCache[path] = (stamp, image);
+    }
+
+    private System.Windows.Media.Imaging.BitmapImage LoadImage(string path)
+    {
+        var stamp = File.GetLastWriteTimeUtc(path);
+        if (_imageCache.TryGetValue(path, out var cached) && cached.Stamp == stamp)
+        {
+            return cached.Image;
+        }
+
+        var image = DecodeImage(path, (int)Math.Min(SystemParameters.VirtualScreenWidth, 3840));
+        StoreImage(path, stamp, image);
+        return image;
+    }
+
+    private async Task PreloadBackgroundAsync(string moduleId)
+    {
+        var path = _backgroundSettings.GetPath(moduleId);
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            var stamp = File.GetLastWriteTimeUtc(path);
+            var width = (int)Math.Min(SystemParameters.VirtualScreenWidth, 3840);
+            var image = await Task.Run(() => DecodeImage(path, width));
+            StoreImage(path, stamp, image);
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to preload background image '{path}'.", ex);
         }
     }
 

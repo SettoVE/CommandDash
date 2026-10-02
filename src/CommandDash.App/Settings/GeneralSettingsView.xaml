@@ -7,9 +7,8 @@
 		<Button Content="Open App Folder" HorizontalAlignment="Left" Padding="10,4"
 				Click="OpenAppFolder_Click"/>
 
-		<TextBlock Text="Focus hotkey" Margin="0,16,0,4" FontWeight="SemiBold"
-				   Foreground="{StaticResource TextPrimaryBrush}"/>
-		<TextBlock Text="Bring CommandDash to the foreground from anywhere."
+        <local:SettingsSectionHeader Title="Focus Hotkey" Margin="0,16,0,0"/>
+        <TextBlock Text="Bring CommandDash to the foreground from anywhere."
 				   Margin="0,0,0,8" Foreground="{StaticResource TextSecondaryBrush}"/>
 		<StackPanel Orientation="Horizontal">
 			<TextBlock x:Name="HotkeyText" VerticalAlignment="Center" MinWidth="120" Margin="0,0,12,0"
