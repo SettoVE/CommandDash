@@ -28,7 +28,6 @@ public partial class MainWindow : Window
     private readonly IModuleLogger _logger = new DebugModuleLogger();
     private readonly ModuleOrderSettings _orderSettings = new();
     private readonly ModuleBackgroundSettings _backgroundSettings = new();
-    private readonly WindowPlacementSettings _placementSettings = new();
     private string? _currentModuleId;
     private IModulePage? _currentPage;
 
@@ -37,8 +36,22 @@ public partial class MainWindow : Window
         InitializeComponent();
         TitleBarTheme.Apply(this);
 
-        _placementSettings.Restore(this);
-        Closing += (_, _) => _placementSettings.Save(this);
+        var config = AppConfig.Load();
+        Title = config.Title;
+        Width = Math.Clamp(config.Width, MinWidth, SystemParameters.VirtualScreenWidth);
+        Height = Math.Clamp(config.Height, MinHeight, SystemParameters.VirtualScreenHeight);
+        if (config.Left is { } left && config.Top is { } top && IsOnScreen(new Rect(left, top, Width, Height)))
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = left;
+            Top = top;
+        }
+
+        Closing += (_, _) =>
+        {
+            var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+            AppConfig.SaveWindowBounds(bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+        };
 
         _backgroundSettings.BackgroundChanged += (_, moduleId) =>
         {
@@ -53,9 +66,21 @@ public partial class MainWindow : Window
         NavigateToDefaultModule();
     }
 
+    // Ignores a saved position that would leave the window off-screen (e.g. a monitor was removed).
+    private static bool IsOnScreen(Rect bounds)
+    {
+        var screen = new Rect(
+            SystemParameters.VirtualScreenLeft,
+            SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenWidth,
+            SystemParameters.VirtualScreenHeight);
+        var visible = Rect.Intersect(bounds, screen);
+        return !visible.IsEmpty && visible.Width >= 100 && visible.Height >= 50;
+    }
+
     private void LoadModules()
     {
-        var modulesDirectory = Path.Combine(AppContext.BaseDirectory, "Modules");
+        var modulesDirectory = Path.Combine(AppContext.BaseDirectory, "modules");
         var loader = new ModuleLoader(_logger);
         var discovered = loader.LoadFrom(modulesDirectory);
 

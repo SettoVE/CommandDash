@@ -30,7 +30,7 @@
                        ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- Copy each built-in module's build output into this app's Modules/
+  <!-- Copy each built-in module's build output into this app's modules/
        folder so ModuleLoader can discover it at startup. -->
   <ItemGroup>
     <!-- Module projects are referenced with ReferenceOutputAssembly=false, so Visual Studio's
@@ -52,7 +52,7 @@
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.dll" />
       <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\$(TargetFramework)\CommandDash.Modules.Routine.pdb" />
     </ItemGroup>
-    <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)Modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
+    <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
   </Target>
 
 </Project>
