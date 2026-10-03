@@ -295,6 +295,25 @@ public partial class MainWindow : Window
         _slideshowTimer.Start();
     }
 
+    private void NextSlideshowImage()
+    {
+        if (string.IsNullOrEmpty(_currentModuleId))
+        {
+            return;
+        }
+
+        var config = _backgroundSettings.GetSlideshow(_currentModuleId);
+        if (!config.Enabled || string.IsNullOrWhiteSpace(config.Folder))
+        {
+            return;
+        }
+
+        AdvanceSlideshow(_currentModuleId, config);
+        _slideshowTimer.Stop();
+        _slideshowTimer.Interval = TimeSpan.FromSeconds(Math.Max(1, config.IntervalSeconds));
+        _slideshowTimer.Start();
+    }
+
     private void SlideshowTimer_Tick(object? sender, EventArgs e)
     {
         if (_slideshowTimer.Tag is string moduleId && moduleId == _currentModuleId)
@@ -524,6 +543,13 @@ public partial class MainWindow : Window
         if (e.Key == Key.F1)
         {
             OpenSettings_Click(sender, e);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.F5)
+        {
+            NextSlideshowImage();
             e.Handled = true;
             return;
         }
