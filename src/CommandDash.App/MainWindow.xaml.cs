@@ -76,8 +76,9 @@ public partial class MainWindow : Window
             AppConfig.SaveWindowBounds(bounds.Left, bounds.Top, bounds.Width, bounds.Height);
         };
 
-        _backgroundSettings.BackgroundChanged += (_, moduleId) =>
+        _backgroundSettings.BackgroundChanged += async (_, moduleId) =>
         {
+            await PreloadBackgroundAsync(moduleId, warmUp: false);
             if (moduleId == _currentModuleId)
             {
                 ApplyBackground(moduleId, restart: true);
@@ -436,6 +437,25 @@ public partial class MainWindow : Window
 
     private readonly Dictionary<string, (DateTime Stamp, System.Windows.Media.Imaging.BitmapImage Image)> _imageCache = new();
 
+    private readonly HashSet<string> _pinnedPaths = new();
+    private readonly Dictionary<string, string> _pinnedByModule = new();
+
+    private void PinImage(string moduleId, string path)
+    {
+        _pinnedByModule[moduleId] = path;
+        _pinnedPaths.Clear();
+        _pinnedPaths.UnionWith(_pinnedByModule.Values);
+    }
+
+    private void UnpinImage(string moduleId)
+    {
+        if (_pinnedByModule.Remove(moduleId))
+        {
+            _pinnedPaths.Clear();
+            _pinnedPaths.UnionWith(_pinnedByModule.Values);
+        }
+    }
+
     private static System.Windows.Media.Imaging.BitmapImage DecodeImage(string path, int pixelWidth)
     {
         var image = new System.Windows.Media.Imaging.BitmapImage();
@@ -452,7 +472,10 @@ public partial class MainWindow : Window
     {
         if (_imageCache.Count >= 12)
         {
-            _imageCache.Clear();
+            foreach (var key in _imageCache.Keys.Where(k => !_pinnedPaths.Contains(k)).ToList())
+            {
+                _imageCache.Remove(key);
+            }
         }
 
         _imageCache[path] = (stamp, image);
@@ -471,11 +494,37 @@ public partial class MainWindow : Window
         return image;
     }
 
-    private async Task PreloadBackgroundAsync(string moduleId)
+    private async Task PreloadBackgroundAsync(string moduleId, bool warmUp = true)
     {
         var path = _backgroundSettings.GetPath(moduleId);
+        var slideshow = _backgroundSettings.GetSlideshow(moduleId);
+        if (slideshow.Enabled && !string.IsNullOrWhiteSpace(slideshow.Folder))
+        {
+            try
+            {
+                var files = Directory.EnumerateFiles(slideshow.Folder)
+                    .Where(f => ImageExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+                    .ToArray();
+                if (files.Length > 0)
+                {
+                    var index = slideshow.Shuffle && files.Length > 1 ? Random.Shared.Next(files.Length) : 0;
+                    path = files[index];
+                    _slideshowStates[moduleId] = new SlideshowState
+                    {
+                        Index = index,
+                        File = path,
+                        ChangedAt = DateTime.UtcNow,
+                    };
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
+            UnpinImage(moduleId);
             return;
         }
 
@@ -484,7 +533,15 @@ public partial class MainWindow : Window
             var stamp = File.GetLastWriteTimeUtc(path);
             var width = (int)Math.Min(SystemParameters.VirtualScreenWidth, 3840);
             var image = await Task.Run(() => DecodeImage(path, width));
+            PinImage(moduleId, path);
             StoreImage(path, stamp, image);
+
+            if (warmUp)
+            {
+                // Show it once behind the loading overlay so WPF uploads the bitmap to the GPU now, not on first navigation.
+                ShowImage(path, animate: false);
+                await RenderAsync();
+            }
         }
         catch (Exception ex)
         {

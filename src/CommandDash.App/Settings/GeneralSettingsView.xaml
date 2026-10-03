@@ -4,7 +4,10 @@
 			 xmlns:local="clr-namespace:CommandDash.App.Settings">
 	<StackPanel Margin="4">
 		<local:SettingsSectionHeader Title="General"/>
-		<Button Content="Open App Folder" HorizontalAlignment="Left" Padding="10,4"
+		<CheckBox x:Name="StartupCheckBox" Content="Launch on start up" Margin="0,0,0,8"
+				  Foreground="{StaticResource TextPrimaryBrush}"
+				  Checked="Startup_Changed" Unchecked="Startup_Changed"/>
+		<Button Content="Open App Folder"
 				Click="OpenAppFolder_Click"/>
 
         <local:SettingsSectionHeader Title="Focus Hotkey" Margin="0,16,0,0"/>

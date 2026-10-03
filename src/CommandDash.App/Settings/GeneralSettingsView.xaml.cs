@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace CommandDash.App.Settings;
 
@@ -10,6 +11,27 @@ public partial class GeneralSettingsView : UserControl
 	{
 		InitializeComponent();
 		RefreshHotkeyText();
+		using (var key = Registry.CurrentUser.OpenSubKey(RunKeyPath))
+		{
+			StartupCheckBox.IsChecked = key?.GetValue(RunValueName) is not null;
+		}
+	}
+
+	private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+	private const string RunValueName = "CommandDash";
+
+	private void Startup_Changed(object sender, RoutedEventArgs e)
+	{
+		using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath);
+		if (StartupCheckBox.IsChecked == true)
+		{
+			if (Environment.ProcessPath is { } path)
+				key.SetValue(RunValueName, $"\"{path}\"");
+		}
+		else
+		{
+			key.DeleteValue(RunValueName, false);
+		}
 	}
 
 	private void OpenAppFolder_Click(object sender, RoutedEventArgs e)
