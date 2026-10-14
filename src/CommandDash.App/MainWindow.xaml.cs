@@ -58,6 +58,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         TitleBarTheme.Apply(this);
         TryApplyLoadingBackground();
+        SetUpTrayIcon();
 
         var config = AppConfig.Load();
         Title = config.Title;
@@ -70,11 +71,19 @@ public partial class MainWindow : Window
             Top = top;
         }
 
-        Closing += (_, _) =>
+        Closing += (_, e) =>
         {
             var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
             AppConfig.SaveWindowBounds(bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+
+            if (!_exiting)
+            {
+                e.Cancel = true;
+                Hide();
+            }
         };
+
+        IsVisibleChanged += (_, _) => _trayIcon.Visible = !IsVisible && !_exiting;
 
         _backgroundSettings.BackgroundChanged += async (_, moduleId) =>
         {
@@ -86,7 +95,75 @@ public partial class MainWindow : Window
         };
 
         // Defer heavy work until the window (with the loading overlay) has been rendered.
-        Loaded += async (_, _) => await InitializeAsync();
+        Loaded += async (_, _) => await InitializeOnceAsync();
+    }
+
+    private bool _initStarted;
+    private bool _exiting;
+    private readonly System.Windows.Forms.NotifyIcon _trayIcon = new();
+
+    private Task InitializeOnceAsync()
+    {
+        if (_initStarted)
+        {
+            return Task.CompletedTask;
+        }
+
+        _initStarted = true;
+        return InitializeAsync();
+    }
+
+    private void SetUpTrayIcon()
+    {
+        System.Drawing.Icon? icon = null;
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "app.ico");
+            if (File.Exists(path))
+            {
+                icon = new System.Drawing.Icon(path);
+            }
+            else if (Environment.ProcessPath is { } exe)
+            {
+                icon = System.Drawing.Icon.ExtractAssociatedIcon(exe);
+            }
+        }
+        catch
+        {
+        }
+
+        _trayIcon.Icon = icon ?? System.Drawing.SystemIcons.Application;
+        _trayIcon.Text = "CommandDash";
+        _trayIcon.MouseDoubleClick += (_, e) =>
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                _hotkey?.Bring();
+            }
+        };
+
+        var menu = new System.Windows.Forms.ContextMenuStrip();
+        menu.Items.Add("Exit", null, (_, _) => ExitApplication());
+        TrayMenuTheme.Apply(menu);
+        _trayIcon.ContextMenuStrip = menu;
+    }
+
+    private void ExitApplication()
+    {
+        _exiting = true;
+        _trayIcon.Visible = false;
+        Close();
+        Application.Current.Shutdown();
+    }
+
+    public void ShowFromTray() => _hotkey?.Bring();
+
+    public void StartInTray()
+    {
+        // Create the native window (registers the hotkey) without showing it.
+        new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+        _trayIcon.Visible = true;
+        _ = InitializeOnceAsync();
     }
 
     private void ReportProgress(string status, int? step = null, int? total = null)
@@ -577,6 +654,7 @@ public partial class MainWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         _hotkey?.Dispose();
+        _trayIcon.Dispose();
         _currentPage?.OnNavigatedFrom();
         _currentPage = null;
 

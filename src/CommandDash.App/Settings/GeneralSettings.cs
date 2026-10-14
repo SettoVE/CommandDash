@@ -16,6 +16,9 @@ public sealed class GeneralSettings
 	/// <summary>Focus hotkey text such as "Alt+`". Empty means no hotkey.</summary>
 	public string Hotkey { get; set; } = AppHotkey.Default.ToString();
 
+	/// <summary>When launched at Windows startup, start hidden in the system tray.</summary>
+	public bool StartMinimized { get; set; }
+
 	public static event EventHandler? Changed;
 
 	public AppHotkey? GetHotkey() => AppHotkey.TryParse(Hotkey, out var hotkey) ? hotkey : null;

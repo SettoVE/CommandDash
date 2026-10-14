@@ -3,12 +3,18 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>CommandDash.App</RootNamespace>
     <OutputType>WinExe</OutputType>
     <AssemblyName>dash</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
 
   <!-- If Assets\app.ico exists at build time it becomes the exe's icon (file icon and pinned taskbar icon). -->
   <PropertyGroup Condition="Exists('Assets\app.ico')">

@@ -8,10 +8,55 @@ public partial class App : Application
 {
     private static BitmapFrame? _customIcon;
 
+    private static Mutex? _instanceMutex;
+
+    public const string TrayArgument = "--tray";
+
     public App()
     {
         TitleBarTheme.RegisterForAllWindows();
         LoadCustomIcon();
+    }
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        _instanceMutex = new Mutex(true, @"Local\CommandDash.SingleInstance", out var isFirst);
+        var showEvent = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\CommandDash.ShowWindow");
+        if (!isFirst)
+        {
+            if (!e.Args.Contains(TrayArgument))
+            {
+                showEvent.Set();
+            }
+
+            Shutdown();
+            return;
+        }
+
+        var window = new MainWindow();
+        var listener = new Thread(() =>
+        {
+            while (showEvent.WaitOne())
+            {
+                Dispatcher.BeginInvoke(() => window.ShowFromTray());
+            }
+        })
+        {
+            IsBackground = true,
+        };
+        listener.Start();
+
+        MainWindow = window;
+        if (e.Args.Contains(TrayArgument))
+        {
+            window.StartInTray();
+        }
+        else
+        {
+            window.Show();
+        }
     }
 
     /// <summary>

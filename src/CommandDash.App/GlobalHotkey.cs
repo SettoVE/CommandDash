@@ -91,7 +91,7 @@ public sealed class GlobalHotkey : IDisposable
         return IntPtr.Zero;
     }
 
-    private void Bring()
+    public void Bring()
     {
         if (!_window.IsVisible)
         {
