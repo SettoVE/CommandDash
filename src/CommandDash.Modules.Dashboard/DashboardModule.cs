@@ -21,7 +21,7 @@ public sealed class DashboardModule : ModuleBase, IWidgetProvider
     public IReadOnlyList<IWidget> CreateWidgets() => _widgets ??= new IWidget[]
         {
             new ClockWidget(),
-            new MediaWidget(),
+            new MusicWidget(),
             new NetworkWidget(),
             new CpuWidget(),
             new GpuWidget(),

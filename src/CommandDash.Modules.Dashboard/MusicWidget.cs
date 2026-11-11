@@ -6,10 +6,10 @@ using Windows.Media.Control;
 namespace CommandDash.Modules.Dashboard;
 
 /// <summary>
-/// Widget that controls the media session Windows routes media keys to
+/// Widget that shows and controls music playback from foobar2000 and Spotify
 /// (System Media Transport Controls).
 /// </summary>
-public sealed class MediaWidget : IWidget, IGridPositionedWidget
+public sealed class MusicWidget : IWidget, IGridPositionedWidget
 {
     private const string PlayGlyph = "\uE768";
     private const string PauseGlyph = "\uE769";
@@ -25,7 +25,7 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
 
     public string Id => "commanddash.home.media";
 
-    public string DisplayName => "Media";
+    public string DisplayName => "Music";
 
     public WidgetSize PreferredSize => WidgetSize.Medium;
 
@@ -35,7 +35,7 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
 
     public object CreateView()
     {
-        _titleText = new TextBlock { FontSize = 20, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Text = "No media playing" };
+        _titleText = new TextBlock { FontSize = 20, FontWeight = FontWeights.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, Text = string.Empty };
         _titleText.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
         _artistText = new TextBlock { FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         _artistText.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
@@ -65,8 +65,9 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
         {
             _manager ??= await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
             if (!_active) return;
-            _manager.CurrentSessionChanged += OnCurrentSessionChanged;
-            AttachSession(_manager.GetCurrentSession());
+            _manager.SessionsChanged += OnSessionsChanged;
+            WatchAllSessions();
+            AttachSession(PickSession());
         }
         catch
         {
@@ -77,9 +78,62 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
     public void OnDeactivated()
     {
         _active = false;
-        if (_manager is not null) _manager.CurrentSessionChanged -= OnCurrentSessionChanged;
+        if (_manager is not null) _manager.SessionsChanged -= OnSessionsChanged;
+        UnwatchAllSessions();
         AttachSession(null);
     }
+
+    private readonly List<GlobalSystemMediaTransportControlsSession> _watched = new();
+
+    private void OnSessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, object args)
+        => Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            if (!_active) return;
+            WatchAllSessions();
+            if (_session is null || !_watched.Contains(_session)) AttachSession(PickSession());
+        });
+
+    private static bool IsSupported(GlobalSystemMediaTransportControlsSession session)
+    {
+        var id = session.SourceAppUserModelId ?? string.Empty;
+        return id.Contains("foobar", StringComparison.OrdinalIgnoreCase)
+            || id.Contains("spotify", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPlaying(GlobalSystemMediaTransportControlsSession session)
+        => session.GetPlaybackInfo()?.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+
+    private GlobalSystemMediaTransportControlsSession? PickSession()
+        => _watched.FirstOrDefault(IsPlaying) ?? _watched.FirstOrDefault();
+
+    private void WatchAllSessions()
+    {
+        UnwatchAllSessions();
+        if (_manager is null) return;
+        foreach (var s in _manager.GetSessions().Where(IsSupported))
+        {
+            s.PlaybackInfoChanged += OnAnyPlaybackChanged;
+            s.MediaPropertiesChanged += OnAnyPlaybackChanged;
+            _watched.Add(s);
+        }
+    }
+
+    private void UnwatchAllSessions()
+    {
+        foreach (var s in _watched)
+        {
+            s.PlaybackInfoChanged -= OnAnyPlaybackChanged;
+            s.MediaPropertiesChanged -= OnAnyPlaybackChanged;
+        }
+        _watched.Clear();
+    }
+
+    private void OnAnyPlaybackChanged(GlobalSystemMediaTransportControlsSession sender, object args)
+        => Application.Current?.Dispatcher.BeginInvoke(() =>
+        {
+            if (!_active || ReferenceEquals(sender, _session)) return;
+            if (_session is null || !IsPlaying(_session) || IsPlaying(sender)) AttachSession(IsPlaying(sender) ? sender : PickSession());
+        });
 
     private static Button CreateButton(string glyph, string tooltip, Action onClick)
     {
@@ -134,9 +188,6 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
         try { await action(session); } catch { }
     }
 
-    private void OnCurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, object args)
-        => Application.Current?.Dispatcher.BeginInvoke(() => AttachSession(sender.GetCurrentSession()));
-
     private void AttachSession(GlobalSystemMediaTransportControlsSession? session)
     {
         if (_session is not null)
@@ -185,12 +236,11 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
     {
         if (_titleText is null || _artistText is null) return;
         var enabled = info is not null;
-        _titleText.Text = info is { } i && !string.IsNullOrWhiteSpace(i.Title) ? i.Title : (enabled ? "Unknown title" : "No media playing");
+        _titleText.Text = info is { } i && !string.IsNullOrWhiteSpace(i.Title) ? i.Title : (enabled ? "Unknown title" : string.Empty);
         _artistText.Text = info?.Artist ?? string.Empty;
         if ((_playPauseButton?.Content as Border)?.Child is TextBlock glyph)
             glyph.Text = info is { Playing: true } ? PauseGlyph : PlayGlyph;
-        if (_playPauseButton is not null)
-        if (_previousButton is not null) _previousButton.IsEnabled = enabled;
-        if (_nextButton is not null) _nextButton.IsEnabled = enabled;
+        if (_playPauseButton is not null) _playPauseButton.IsEnabled = enabled;
+        if (_previousButton is not null) _previousButton.IsEnabled = enabled;        if (_nextButton is not null) _nextButton.IsEnabled = enabled;
     }
 }
