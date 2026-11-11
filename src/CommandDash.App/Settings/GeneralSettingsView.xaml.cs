@@ -43,8 +43,8 @@ public partial class GeneralSettingsView : UserControl
 		{
 			if (Environment.ProcessPath is { } path)
 				key.SetValue(RunValueName, StartMinimizedCheckBox.IsChecked == true
-					? $"\"{path}\" {App.TrayArgument}"
-					: $"\"{path}\"");
+					? $"\"{path}\" {App.BootArgument} {App.TrayArgument}"
+					: $"\"{path}\" {App.BootArgument}");
 		}
 		else
 		{

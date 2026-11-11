@@ -743,6 +743,7 @@ public partial class MainWindow : Window
         var rootNodes = new List<ISettingsNode>
         {
             new GeneralSettingsNode(),
+            new StartupScriptsSettingsNode(),
             modulesNode,
         };
 

@@ -12,6 +12,8 @@ public partial class App : Application
 
     public const string TrayArgument = "--tray";
 
+    public const string BootArgument = "--boot";
+
     public App()
     {
         TitleBarTheme.RegisterForAllWindows();
@@ -33,6 +35,11 @@ public partial class App : Application
 
             Shutdown();
             return;
+        }
+
+        if (!Settings.StartupScriptsSettings.Load().OnlyOnWindowsStartup || e.Args.Contains(BootArgument))
+        {
+            Settings.StartupScriptsSettings.RunAll();
         }
 
         var window = new MainWindow();
