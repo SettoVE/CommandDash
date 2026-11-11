@@ -10,8 +10,8 @@ namespace CommandDash.Modules.Dashboard;
 /// </summary>
 public sealed class GpuWidget : HardwareWidgetBase
 {
-    private readonly Dictionary<string, PerformanceCounter> _counters = new();
-    private DateTime _lastRefresh = DateTime.MinValue;
+    private static readonly PerformanceCounterCategory Category = new("GPU Engine");
+    private Dictionary<string, CounterSample> _previous = new();
     private TextBlock? _value;
     private ProgressBar? _bar;
     private double _usage;
@@ -35,53 +35,31 @@ public sealed class GpuWidget : HardwareWidgetBase
 
     protected override void Sample()
     {
-        if (DateTime.UtcNow - _lastRefresh > TimeSpan.FromSeconds(5))
-        {
-            RefreshInstances();
-            _lastRefresh = DateTime.UtcNow;
-        }
-
         var byEngine = new Dictionary<string, double>();
-        foreach (var (name, counter) in _counters.ToArray())
+        var current = new Dictionary<string, CounterSample>();
+
+        try
         {
-            try
+            var data = Category.ReadCategory();
+            if (data.Contains("Utilization Percentage"))
             {
-                var engine = EngineType(name);
-                byEngine[engine] = byEngine.GetValueOrDefault(engine) + counter.NextValue();
-            }
-            catch (InvalidOperationException)
-            {
-                counter.Dispose();
-                _counters.Remove(name);
+                foreach (InstanceData instance in data["Utilization Percentage"].Values)
+                {
+                    var sample = instance.Sample;
+                    current[instance.InstanceName] = sample;
+                    if (!_previous.TryGetValue(instance.InstanceName, out var previous)) continue;
+
+                    var engine = EngineType(instance.InstanceName);
+                    byEngine[engine] = byEngine.GetValueOrDefault(engine) + CounterSample.Calculate(previous, sample);
+                }
             }
         }
+        catch (InvalidOperationException)
+        {
+        }
 
+        _previous = current;
         _usage = byEngine.Count == 0 ? 0 : Math.Clamp(byEngine.Values.Max(), 0, 100);
-    }
-
-    private void RefreshInstances()
-    {
-        var category = new PerformanceCounterCategory("GPU Engine");
-        var names = category.GetInstanceNames().ToHashSet();
-
-        foreach (var stale in _counters.Keys.Where(k => !names.Contains(k)).ToList())
-        {
-            _counters[stale].Dispose();
-            _counters.Remove(stale);
-        }
-
-        foreach (var name in names.Where(n => !_counters.ContainsKey(n)))
-        {
-            try
-            {
-                var counter = new PerformanceCounter("GPU Engine", "Utilization Percentage", name, true);
-                counter.NextValue();
-                _counters[name] = counter;
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
     }
 
     private static string EngineType(string instance)

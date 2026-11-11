@@ -538,6 +538,7 @@ public partial class MainWindow : Window
         var image = new System.Windows.Media.Imaging.BitmapImage();
         image.BeginInit();
         image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+        image.CreateOptions = System.Windows.Media.Imaging.BitmapCreateOptions.IgnoreColorProfile;
         image.DecodePixelWidth = pixelWidth;
         image.UriSource = new Uri(path, UriKind.Absolute);
         image.EndInit();
@@ -558,6 +559,8 @@ public partial class MainWindow : Window
         _imageCache[path] = (stamp, image);
     }
 
+    private static int BackgroundDecodeWidth() => (int)Math.Min(SystemParameters.PrimaryScreenWidth, 3840);
+
     private System.Windows.Media.Imaging.BitmapImage LoadImage(string path)
     {
         var stamp = File.GetLastWriteTimeUtc(path);
@@ -566,7 +569,7 @@ public partial class MainWindow : Window
             return cached.Image;
         }
 
-        var image = DecodeImage(path, (int)Math.Min(SystemParameters.VirtualScreenWidth, 3840));
+        var image = DecodeImage(path, BackgroundDecodeWidth());
         StoreImage(path, stamp, image);
         return image;
     }
@@ -608,7 +611,7 @@ public partial class MainWindow : Window
         try
         {
             var stamp = File.GetLastWriteTimeUtc(path);
-            var width = (int)Math.Min(SystemParameters.VirtualScreenWidth, 3840);
+            var width = BackgroundDecodeWidth();
             var image = await Task.Run(() => DecodeImage(path, width));
             PinImage(moduleId, path);
             StoreImage(path, stamp, image);

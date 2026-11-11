@@ -13,6 +13,16 @@
     <OutputPath>bin\$(Configuration)\net8.0-windows\</OutputPath>
   </PropertyGroup>
 
+  <!-- Smaller publish output. PublishTrimmed is intentionally not used: WPF does not support trimming and modules are loaded dynamically. -->
+  <PropertyGroup>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
@@ -31,17 +41,18 @@
   <ItemGroup>
     <ProjectReference Include="..\CommandDash.Core\CommandDash.Core.csproj" />
     <!-- Not referenced for compilation (ReferenceOutputAssembly=false); these
-         only ensure the built-in modules build as part of the solution and
-         let us copy their output into our own Modules folder below. The App
-         loads them dynamically via ModuleLoader, not via a direct reference. -->
+         only ensure the built-in modules build as part of the solution. Their
+         built DLLs are collected into @(BuiltInModule) (OutputItemType) and copied
+         into our Modules folder below, so no target framework folder is hardcoded.
+         The App loads them dynamically via ModuleLoader, not via a direct reference. -->
     <ProjectReference Include="..\CommandDash.Modules.Dashboard\CommandDash.Modules.Dashboard.csproj"
-                       ReferenceOutputAssembly="false" />
+                       ReferenceOutputAssembly="false" OutputItemType="BuiltInModule" />
     <ProjectReference Include="..\CommandDash.Modules.RunScript\CommandDash.Modules.RunScript.csproj"
-                       ReferenceOutputAssembly="false" />
+                       ReferenceOutputAssembly="false" OutputItemType="BuiltInModule" />
     <ProjectReference Include="..\CommandDash.Modules.Tasks\CommandDash.Modules.Tasks.csproj"
-                       ReferenceOutputAssembly="false" />
+                       ReferenceOutputAssembly="false" OutputItemType="BuiltInModule" />
     <ProjectReference Include="..\CommandDash.Modules.Routine\CommandDash.Modules.Routine.csproj"
-                       ReferenceOutputAssembly="false" />
+                       ReferenceOutputAssembly="false" OutputItemType="BuiltInModule" />
   </ItemGroup>
 
   <!-- Copy each built-in module's build output into this app's modules/
@@ -49,24 +60,16 @@
   <ItemGroup>
     <!-- Module projects are referenced with ReferenceOutputAssembly=false, so Visual Studio's
          fast up-to-date check would otherwise skip this project (and the copy below) when
-         only a module changed. -->
-    <UpToDateCheckInput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\net8.0-windows10.0.19041.0\CommandDash.Modules.Dashboard.dll" />
-    <UpToDateCheckInput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.RunScript.dll" />
-    <UpToDateCheckInput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Tasks.dll" />
-    <UpToDateCheckInput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Routine.dll" />
+         only a module changed. The wildcard is target framework agnostic. -->
+    <UpToDateCheckInput Include="..\CommandDash.Modules.*\bin\$(Configuration)\**\CommandDash.Modules.*.dll" />
   </ItemGroup>
   <Target Name="CopyModulesToModulesFolder" AfterTargets="Build">
     <ItemGroup>
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\net8.0-windows10.0.19041.0\CommandDash.Modules.Dashboard.dll" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Dashboard\bin\$(Configuration)\net8.0-windows10.0.19041.0\CommandDash.Modules.Dashboard.pdb" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.RunScript.dll" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.RunScript\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.RunScript.pdb" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Tasks.dll" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Tasks\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Tasks.pdb" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Routine.dll" />
-      <BuiltInModuleOutput Include="..\CommandDash.Modules.Routine\bin\$(Configuration)\net8.0-windows\CommandDash.Modules.Routine.pdb" />
+      <BuiltInModuleFile Include="@(BuiltInModule)" />
+      <BuiltInModuleFile Include="@(BuiltInModule->'%(RootDir)%(Directory)%(Filename).pdb')" Condition="Exists('%(RootDir)%(Directory)%(Filename).pdb')" />
     </ItemGroup>
-    <Copy SourceFiles="@(BuiltInModuleOutput)" DestinationFolder="$(OutDir)modules\" SkipUnchangedFiles="true" ContinueOnError="true" />
+    <Error Condition="'@(BuiltInModule)' == ''" Text="No built-in module outputs were resolved; modules would not be copied." />
+    <Copy SourceFiles="@(BuiltInModuleFile)" DestinationFolder="$(OutDir)modules\" SkipUnchangedFiles="true" />
     <MakeDir Directories="$(OutDir)scripts" />
   </Target>
 

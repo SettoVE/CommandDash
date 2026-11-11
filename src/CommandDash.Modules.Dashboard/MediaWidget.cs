@@ -188,7 +188,8 @@ public sealed class MediaWidget : IWidget, IGridPositionedWidget
         _titleText.Text = info is { } i && !string.IsNullOrWhiteSpace(i.Title) ? i.Title : (enabled ? "Unknown title" : "No media playing");
         _artistText.Text = info?.Artist ?? string.Empty;
         if ((_playPauseButton?.Content as Border)?.Child is TextBlock glyph)
-        if (_playPauseButton is not null) _playPauseButton.IsEnabled = enabled;
+            glyph.Text = info is { Playing: true } ? PauseGlyph : PlayGlyph;
+        if (_playPauseButton is not null)
         if (_previousButton is not null) _previousButton.IsEnabled = enabled;
         if (_nextButton is not null) _nextButton.IsEnabled = enabled;
     }
