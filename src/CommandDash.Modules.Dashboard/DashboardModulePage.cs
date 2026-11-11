@@ -7,9 +7,12 @@ public sealed class DashboardModulePage : IModulePage
     private readonly DashboardModuleView _view = new();
     private readonly IReadOnlyList<IWidget> _widgets;
 
-    public DashboardModulePage(IReadOnlyList<IWidget> widgets)
+    internal DashboardModulePage(IReadOnlyList<IWidget> widgets, DashboardSettings settings)
     {
         _widgets = widgets;
+        _view.ApplyAlignment(settings.HorizontalAlignment, settings.VerticalAlignment);
+        settings.Changed += (_, _) => _view.Dispatcher.Invoke(
+            () => _view.ApplyAlignment(settings.HorizontalAlignment, settings.VerticalAlignment));
 
         // Widgets that request a position keep it; the rest flow left-to-right
         // into rows below the last explicitly placed row.

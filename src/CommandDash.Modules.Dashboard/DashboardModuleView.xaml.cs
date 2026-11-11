@@ -51,6 +51,18 @@ public partial class DashboardModuleView : UserControl
     /// <summary>Number of equal-width columns in the widget grid.</summary>
     public const int ColumnCount = 2;
 
+    public void ApplyAlignment(HorizontalAlignment horizontal, VerticalAlignment vertical)
+    {
+        WidgetGrid.HorizontalAlignment = horizontal;
+        _fillHorizontal = horizontal == HorizontalAlignment.Stretch;
+        WidgetGrid.VerticalAlignment = vertical;
+        _fillVertical = vertical == VerticalAlignment.Stretch;
+        if (_widgets.Count > 0) UpdateLayout(true);
+    }
+
+    private bool _fillVertical;
+    private bool _fillHorizontal;
+
     public void AddWidget(string title, object content, WidgetGridPosition placement, string? subtitle = null)
     {
         if (WidgetGrid.ColumnDefinitions.Count == 0)
@@ -78,6 +90,9 @@ public partial class DashboardModuleView : UserControl
 
         WidgetGrid.RowDefinitions.Clear();
         var columns = WidgetGrid.ColumnDefinitions;
+        WidgetGrid.MaxWidth = !_fillHorizontal
+            ? double.PositiveInfinity
+            : (single ? 1 : columns.Count) * (MaxWidgetWidth + CardGap);
         columns[0].MaxWidth = single ? double.PositiveInfinity : MaxWidgetWidth + CardGap;
         for (var c = 1; c < columns.Count; c++)
         {
@@ -99,7 +114,7 @@ public partial class DashboardModuleView : UserControl
             nextRow++;
 
             while (WidgetGrid.RowDefinitions.Count < row + rowSpan)
-                WidgetGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                WidgetGrid.RowDefinitions.Add(new RowDefinition { Height = _fillVertical ? new GridLength(1, GridUnitType.Star) : GridLength.Auto });
 
             Grid.SetRow(card, row);
             card.MaxWidth = single ? MaxWidgetWidth : double.PositiveInfinity;
@@ -147,7 +162,7 @@ public partial class DashboardModuleView : UserControl
 
         var card = new Border
         {
-            Height = CellSize,
+            MinHeight = CellSize,
             Margin = new Thickness(0, 0, 8, 8),
             ClipToBounds = true,
         };

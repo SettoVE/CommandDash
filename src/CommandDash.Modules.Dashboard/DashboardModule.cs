@@ -1,3 +1,4 @@
+using System.IO;
 using CommandDash.Core;
 
 namespace CommandDash.Modules.Dashboard;
@@ -6,9 +7,14 @@ namespace CommandDash.Modules.Dashboard;
 /// Built-in Dashboard module. The default landing page, hosting a grid of
 /// widgets (see IWidget/IWidgetProvider).
 /// </summary>
-public sealed class DashboardModule : ModuleBase, IWidgetProvider
+public sealed class DashboardModule : ModuleBase, IWidgetProvider, IModuleWithSettings
 {
     private IReadOnlyList<IWidget>? _widgets;
+    private DashboardSettings? _settings;
+
+    private DashboardSettings Settings => _settings ??= new DashboardSettings(
+        Context?.DataDirectory
+        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CommandDash", "Dashboard"));
 
     public override string Id => "commanddash.home";
 
@@ -28,5 +34,8 @@ public sealed class DashboardModule : ModuleBase, IWidgetProvider
             new MemoryWidget(),
         };
 
-    public override IModulePage CreatePage() => new DashboardModulePage(Context?.GetAvailableWidgets() ?? CreateWidgets());
+    public override IModulePage CreatePage() => new DashboardModulePage(Context?.GetAvailableWidgets() ?? CreateWidgets(), Settings);
+
+        public ISettingsNode GetSettingsNode()
+            => new SettingsNode("commanddash.home.settings", DisplayName, () => new DashboardSettingsView(Settings));
 }

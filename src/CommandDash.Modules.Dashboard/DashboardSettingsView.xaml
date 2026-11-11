@@ -1,0 +1,26 @@
+<UserControl x:Class="CommandDash.Modules.Dashboard.DashboardSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="4">
+        <TextBlock Text="Dashboard" FontSize="22" FontWeight="Bold"
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,8"/>
+
+        <TextBlock Text="Horizontal alignment" Foreground="{DynamicResource TextPrimaryBrush}"/>
+        <ComboBox x:Name="HorizontalCombo" Margin="0,4,0,0" Width="200" HorizontalAlignment="Left"
+                  SelectionChanged="Horizontal_Changed">
+            <ComboBoxItem Content="Left" Tag="Left"/>
+            <ComboBoxItem Content="Center" Tag="Center"/>
+            <ComboBoxItem Content="Right" Tag="Right"/>
+                        <ComboBoxItem Content="Fill" Tag="Stretch"/>
+        </ComboBox>
+
+        <TextBlock Text="Vertical alignment" Margin="0,16,0,0" Foreground="{DynamicResource TextPrimaryBrush}"/>
+        <ComboBox x:Name="VerticalCombo" Margin="0,4,0,0" Width="200" HorizontalAlignment="Left"
+                  SelectionChanged="Vertical_Changed">
+            <ComboBoxItem Content="Top" Tag="Top"/>
+            <ComboBoxItem Content="Center" Tag="Center"/>
+            <ComboBoxItem Content="Bottom" Tag="Bottom"/>
+                        <ComboBoxItem Content="Fill" Tag="Stretch"/>
+        </ComboBox>
+    </StackPanel>
+</UserControl>
